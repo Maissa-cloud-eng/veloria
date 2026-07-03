@@ -1,0 +1,106 @@
+{
+  "project_info": {
+    "project_number": "516358628876",
+    "project_id": "veloria-f35fd",
+    "storage_bucket": "veloria-f35fd.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:516358628876:android:f5626851eadbcc1694f029",
+        "android_client_info": {
+          "package_name": "com.example.veloria"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "516358628876-8ssu0dmp7dbh7dj6t4ove5gqdiiatrmh.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.veloria",
+            "certificate_hash": "474ea4dad41c98898839b49a06fea18a7417c744"
+          }
+        },
+        {
+          "client_id": "516358628876-q15ccfudamo3eu9e4riabicf49ngjq9v.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBfzAEH_Y0P0ISmizm6kisR2Ga3gJUWjqk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "516358628876-q15ccfudamo3eu9e4riabicf49ngjq9v.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "516358628876-beqh7rr8sc0jtilvt6p3k77ogcbs3js6.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.veloria"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:516358628876:android:0561c2cbc930425c94f029",
+        "android_client_info": {
+          "package_name": "com.veloria.shop"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "516358628876-o9rclbbregver58s6pgr7r1tpdnd0dco.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.veloria.shop",
+            "certificate_hash": "474ea4dad41c98898839b49a06fea18a7417c744"
+          }
+        },
+        {
+          "client_id": "516358628876-tb9fqt96avsels5vktg4fur6qlppgge6.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.veloria.shop",
+            "certificate_hash": "a4fcb534d88a1bd60fa9ba95d5a1d8f9715a4e68"
+          }
+        },
+        {
+          "client_id": "516358628876-q15ccfudamo3eu9e4riabicf49ngjq9v.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBfzAEH_Y0P0ISmizm6kisR2Ga3gJUWjqk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "516358628876-q15ccfudamo3eu9e4riabicf49ngjq9v.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "516358628876-beqh7rr8sc0jtilvt6p3k77ogcbs3js6.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.veloria"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

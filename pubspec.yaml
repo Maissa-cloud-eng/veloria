@@ -1,0 +1,65 @@
+name: veloria
+description: "App beauté"
+
+publish_to: 'none' 
+
+
+version: 1.0.0+21
+
+environment:
+  sdk: ^3.10.3
+
+dependencies:
+  flutter:
+    sdk: flutter
+  google_sign_in: ^6.2.1
+  image_picker: ^1.2.1
+  pdf: ^3.10.8
+  printing: ^5.11.1
+  cached_network_image: ^3.3.0
+
+  # --- Firebase (versions cohérentes) ---
+  firebase_core: ^4.4.0
+  firebase_auth: ^6.1.4
+  cloud_firestore: ^6.1.2
+  firebase_messaging: ^16.1.1
+
+  # --- Stockage local ---
+  shared_preferences: ^2.1.1
+
+  # --- UI & outils ---
+  cupertino_icons: ^1.0.8
+  provider: ^6.1.5+1
+  intl: ^0.20.2
+  change_app_package_name: ^1.5.0
+  device_info_plus: ^12.3.0
+  flutter_markdown: ^0.7.7+1
+  carousel_slider: ^5.1.2
+  sign_in_with_apple: ^7.0.1
+  flutter_screenutil: ^5.9.3
+  crypto: ^3.0.7
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.4
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/V.png"  # <-- ton logo
+  remove_alpha: true  # optionnel, utile si ton logo a un fond transparent
+  adaptive_icon_background: "#ffffff" # couleur de fond pour icône adaptative Android
+
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/banner.png
+    - assets/logo.png
+    - assets/V.png
+    - assets/google_icon.png
+    - assets/apple_icon.png
+    - assets/puces/

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>516358628876-beqh7rr8sc0jtilvt6p3k77ogcbs3js6.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.516358628876-beqh7rr8sc0jtilvt6p3k77ogcbs3js6</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>516358628876-8ssu0dmp7dbh7dj6t4ove5gqdiiatrmh.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyDEHyDtgYf0nah8GLg05tw494-VKA1uq2s</string>
+	<key>GCM_SENDER_ID</key>
+	<string>516358628876</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.example.veloria</string>
+	<key>PROJECT_ID</key>
+	<string>veloria-f35fd</string>
+	<key>STORAGE_BUCKET</key>
+	<string>veloria-f35fd.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:516358628876:ios:a6e1fe04fd86160594f029</string>
+</dict>
+</plist>
