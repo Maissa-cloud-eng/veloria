@@ -1159,6 +1159,18 @@ class ProductCard extends StatelessWidget {
     // 4. ON NE GARDE QUE LES TAGS QUI SONT DANS TES LISTES
     for (var tag in allTags) {
       if (states.contains(tag) || skin.contains(tag)) {
+        // --- LOGIQUE D'EXCLUSION ---
+        // Si le tag est "tout_type" MAIS qu'on a déjà "abîmés" dans la liste, on ignore le "tout_type"
+        if (tag == "tout_type" && results.contains("abîmés")) {
+          continue;
+        }
+
+        // Si le tag est "abîmés" MAIS qu'on a déjà "tout_type" dans la liste, on enlève le "tout_type"
+        if (tag == "abîmés" && results.contains("Tous Types")) {
+          results.remove("Tous Types");
+        }
+        // ---------------------------
+
         // Transformation visuelle pour "tout_type"
         String finalName = (tag == "tout_type") ? "Tous Types" : tag;
 

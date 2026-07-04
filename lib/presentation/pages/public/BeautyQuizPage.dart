@@ -244,6 +244,28 @@ class _BeautyQuizPageState extends State<BeautyQuizPage> {
         .trim(); // Enlève les espaces au début et à la fin
   }
 
+  String _normalizeMatchTag(String tag) {
+    return tag
+        .toLowerCase()
+        .trim()
+        .replaceAll(RegExp(r'[\s-]+'), '_')
+        .replaceAll('à', 'a')
+        .replaceAll('â', 'a')
+        .replaceAll('ä', 'a')
+        .replaceAll('é', 'e')
+        .replaceAll('è', 'e')
+        .replaceAll('ê', 'e')
+        .replaceAll('ë', 'e')
+        .replaceAll('î', 'i')
+        .replaceAll('ï', 'i')
+        .replaceAll('ô', 'o')
+        .replaceAll('ö', 'o')
+        .replaceAll('ù', 'u')
+        .replaceAll('û', 'u')
+        .replaceAll('ü', 'u')
+        .replaceAll('ç', 'c');
+  }
+
   Future<List<Map<String, dynamic>>> _fetchProducts() async {
     final snapshot = await FirebaseFirestore.instance
         .collection('products')
@@ -271,8 +293,8 @@ class _BeautyQuizPageState extends State<BeautyQuizPage> {
 
     // Normalisation complète des tags de recherche (on remplace aussi tout-type par tout_type au cas où)
     final tagSet = currentTags.map((t) {
-      String clean = t.toLowerCase().trim();
-      if (clean == "tout_type") return "tout_type";
+      String clean = _normalizeMatchTag(t);
+      if (clean == "tout_types") return "tout_type";
       return clean;
     }).toSet();
 
@@ -280,19 +302,19 @@ class _BeautyQuizPageState extends State<BeautyQuizPage> {
 
     const tagsProfilUniversels = {
       "normale",
-      "sèche",
       "seche",
       "grasse",
       "mixte",
       "lisses",
-      "ondulés",
-      "bouclés",
-      "frisés",
-      "crépus",
+      "ondules",
+      "boucles",
+      "frises",
+      "crepus",
       "normaux",
       "secs",
       "gras",
       "tout_type",
+      "tout_types",
     };
 
     List<Map<String, dynamic>> eligible = products.where((p) {
@@ -332,7 +354,7 @@ class _BeautyQuizPageState extends State<BeautyQuizPage> {
       // Récupération et normalisation des tags du produit
       final productTags = List<String>.from(
         p['tags'] ?? [],
-      ).map((t) => t.toLowerCase().trim()).toList();
+      ).map((t) => _normalizeMatchTag(t)).toList();
 
       // 🌟 LE FILTRAGE INTELLIGENT ET FLEXIBLE :
       return tagSet.every((requiredTag) {
@@ -340,7 +362,7 @@ class _BeautyQuizPageState extends State<BeautyQuizPage> {
           // Un produit correspond si il a le tag précis OU s'il est universel (avec _ ou -)
           return productTags.contains(requiredTag) ||
               productTags.contains("tout_type") ||
-              productTags.contains("tout_type");
+              productTags.contains("tout_types");
         } else {
           return productTags.contains(requiredTag);
         }
@@ -363,7 +385,7 @@ class _BeautyQuizPageState extends State<BeautyQuizPage> {
       var specificMatches = candidates.where((p) {
         final pTags = List<String>.from(
           p['tags'] ?? [],
-        ).map((t) => t.toLowerCase().trim()).toList();
+        ).map((t) => _normalizeMatchTag(t)).toList();
         return tagSet.any(
           (tag) => tagsProfilUniversels.contains(tag) && pTags.contains(tag),
         );
@@ -389,6 +411,12 @@ class _BeautyQuizPageState extends State<BeautyQuizPage> {
         .toList();
     var bestImport = pickBest(importCandidates, "Importation");
     if (bestImport != null) finalSelection.add(bestImport);
+
+    // Sécurité : si l'origine n'est pas exactement Local/Importation, on garde quand même un candidat valide.
+    if (finalSelection.isEmpty && eligible.isNotEmpty) {
+      eligible.shuffle();
+      finalSelection.add(eligible.first);
+    }
 
     // On enregistre les IDs pour ne pas les dupliquer au sein d'un même écran de résultats
     if (trackDisplayed) {
@@ -690,17 +718,74 @@ class _BeautyQuizPageState extends State<BeautyQuizPage> {
 
     // Fallback Masque -> Après-shampooing
     if (categoryLower.contains("cheveux") || categoryLower.contains("hair")) {
-      List<String> testMasqueTags = List.from(baseProfileTags)..add("masque");
-      var masqueResults = await _matchProducts(testMasqueTags);
+      List<String> testMasqueTags = List.from(baseProfileTags);
 
-      if (masqueResults.isNotEmpty) {
-        for (var p in masqueResults) {
+      if (isHairColored && !isBlonde) {
+        if (!testMasqueTags.contains("colorés")) {
+          testMasqueTags.add("colorés");
+        }
+      } else if (isHairDamaged) {
+        if (!testMasqueTags.contains("abîmés") &&
+            !testMasqueTags.contains("réparation")) {
+          testMasqueTags.add("réparation");
+        }
+      }
+
+      testMasqueTags.add("masque");
+
+      debugPrint(
+        "🔍 [VELORIA TRACKING] Test Masque strict avec les tags : $testMasqueTags",
+      );
+
+      var masqueResults = await _matchProducts(
+        testMasqueTags,
+        excludeDisplayed: false,
+        trackDisplayed: false,
+        limitToBestByOrigin: false,
+      );
+
+      Set<String> uniqueMasqueFallbackTags = {};
+      String normProfile = _normalizeTag(profile);
+      String normSecondary = secondary != null ? _normalizeTag(secondary) : "";
+
+      for (String tag in testMasqueTags) {
+        if (tag == normProfile || tag == normSecondary) {
+          uniqueMasqueFallbackTags.add("tout_type");
+        } else {
+          uniqueMasqueFallbackTags.add(tag);
+        }
+      }
+
+      List<String> testMasqueFallbackTags = uniqueMasqueFallbackTags.toList();
+
+      debugPrint(
+        "🌟 [VELORIA TRACKING] Test Masque universel avec les tags nettoyés : $testMasqueFallbackTags",
+      );
+
+      var masqueUniversalResults = await _matchProducts(
+        testMasqueFallbackTags,
+        excludeDisplayed: false,
+        trackDisplayed: false,
+        limitToBestByOrigin: false,
+      );
+
+      List<Map<String, dynamic>> allMasqueResults = [
+        ...masqueResults,
+        ...masqueUniversalResults,
+      ];
+
+      final uniqueMasqueIds = <String>{};
+      allMasqueResults.retainWhere((p) => uniqueMasqueIds.add(p['id']));
+
+      if (allMasqueResults.isNotEmpty) {
+        for (var p in allMasqueResults) {
           displayedProductIds.remove(p['id']);
         }
       } else {
         debugPrint(
-          "⚠️ [VELORIA TRACKING] Aucun Masque en stock pour ces critères. Mutation du type en 'Après-shampooing'",
+          "⚠️ [VELORIA TRACKING] Aucun Masque strict ou tout_type en stock. Mutation du type en 'Après-shampooing'",
         );
+
         int index = typesToSearch.indexOf("Masque");
         if (index != -1) {
           typesToSearch[index] = "Après-shampooing";
