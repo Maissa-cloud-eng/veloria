@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:veloria/core/i18n/app_text.dart';
 import 'package:veloria/auth_service.dart';
 import 'package:veloria/presentation/controllers/cart_controllers.dart';
 import 'package:veloria/presentation/controllers/wishlist_controller.dart';
@@ -186,16 +187,21 @@ class MyApp extends StatelessWidget {
 
       // --- LA PROTECTION ULTIME S'INJECTE ICI ---
       builder: (context, child) {
-        return Container(
-          color:
-              Colors.white, // Force les barres latérales de l'iPad en blanc pur
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(
-                maxWidth:
-                    450, // Bloque TOUS les écrans (onglets, pages isolées, popups) à 450px max
+        final language = context.watch<LanguageProvider>();
+
+        return Directionality(
+          textDirection: language.textDirection,
+          child: Container(
+            color: Colors
+                .white, // Force les barres latérales de l'iPad en blanc pur
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(
+                  maxWidth:
+                      450, // Bloque TOUS les écrans (onglets, pages isolées, popups) à 450px max
+                ),
+                child: child,
               ),
-              child: child,
             ),
           ),
         );
@@ -427,9 +433,6 @@ class MainWrapperState extends State<MainWrapper> {
 
   @override
   Widget build(BuildContext context) {
-    final String lang = Provider.of<LanguageProvider>(context).selectedLanguage;
-    final bool isEn = lang == "Anglais";
-
     return Scaffold(
       // --- MODIFICATION ICI : On encadre le body pour l'iPad ---
       body: Container(
@@ -463,11 +466,11 @@ class MainWrapperState extends State<MainWrapper> {
         items: [
           BottomNavigationBarItem(
             icon: const Icon(Icons.home),
-            label: isEn ? "Home" : "Accueil",
+            label: context.t("nav.home"),
           ),
           BottomNavigationBarItem(
             icon: const Icon(Icons.category),
-            label: isEn ? "Shop" : "Boutique",
+            label: context.t("nav.shop"),
           ),
           BottomNavigationBarItem(
             icon: Consumer<WishlistController>(
@@ -497,7 +500,7 @@ class MainWrapperState extends State<MainWrapper> {
                 );
               },
             ),
-            label: isEn ? "Favorites" : "Favoris",
+            label: context.t("nav.favorites"),
           ),
           BottomNavigationBarItem(
             icon: Consumer<CartController>(
@@ -527,11 +530,11 @@ class MainWrapperState extends State<MainWrapper> {
                 );
               },
             ),
-            label: isEn ? "Cart" : "Panier",
+            label: context.t("nav.cart"),
           ),
           BottomNavigationBarItem(
             icon: const Icon(Icons.person),
-            label: isEn ? "Profile" : "Profil",
+            label: context.t("nav.profile"),
           ),
         ],
       ),

@@ -44,30 +44,50 @@ class _ClicksPageState extends State<ClicksPage> {
     }
   }
 
-  // --- NOUVELLE LOGIQUE DE COMPTAGE UNIQUE (ANTI-DÉPASSEMENT 100%) ---
-  int _countUniqueAction(List<QueryDocumentSnapshot> docs, String eventName) {
-    final Map<String, bool> uniqueActionMap = {};
+  String _visitorKey(Map<String, dynamic> data, String docId) {
+    for (final key in [
+      'userId',
+      'deviceId',
+      'visitorId',
+      'sessionId',
+      'clientId',
+    ]) {
+      final value = data[key]?.toString().trim();
+      if (value != null && value.isNotEmpty && value.toLowerCase() != 'null') {
+        return '$key:$value';
+      }
+    }
+    return 'doc:$docId';
+  }
+
+  String _sessionKey(Map<String, dynamic> data, String docId) {
+    final sessionId = data['sessionId']?.toString().trim();
+    if (sessionId != null &&
+        sessionId.isNotEmpty &&
+        sessionId.toLowerCase() != 'null') {
+      return 'session:$sessionId';
+    }
+    return _visitorKey(data, docId);
+  }
+
+  int _countSessionsWithEvent(
+    List<QueryDocumentSnapshot> docs,
+    String eventName,
+  ) {
+    final Set<String> sessions = {};
     for (var d in docs) {
       final data = d.data() as Map<String, dynamic>;
       if (data['event'] == eventName) {
-        final dynamic ts = data['timestamp'];
-        if (ts == null || ts is! Timestamp) continue;
-
-        DateTime date = ts.toDate();
-        String visitorId = data['userId'] ?? data['deviceId'] ?? 'GUEST';
-        // On crée une clé par utilisateur ET par jour pour cet événement
-        String actionKey = "${visitorId}_${date.year}${date.month}${date.day}";
-        uniqueActionMap[actionKey] = true;
+        sessions.add(_sessionKey(data, d.id));
       }
     }
-    return uniqueActionMap.length;
+    return sessions.length;
   }
 
-  String _calculateEngagement(int uniqueEventCount, int totalUsers) {
-    if (totalUsers == 0) return "0%";
-    // Le ratio ne peut plus dépasser 1 car uniqueEventCount <= totalUsers
-    double pct = (uniqueEventCount / totalUsers) * 100;
-    return "${pct.toStringAsFixed(1)}%";
+  String _calculateRate(int sessionCount, int totalSessions) {
+    if (totalSessions == 0) return "0%";
+    final pct = (sessionCount / totalSessions) * 100;
+    return "${pct.clamp(0, 100).toStringAsFixed(1)}%";
   }
 
   @override
@@ -133,73 +153,93 @@ class _ClicksPageState extends State<ClicksPage> {
           if (docs.isEmpty)
             return const Center(child: Text("Aucune donnée sur cette période"));
 
-          // --- LOGIQUE UTILISATRICES GLOBALES ---
-          final Map<String, bool> dailyUniqueMap = {};
+          final Set<String> uniqueVisitors = {};
+          final Set<String> sessions = {};
           for (var d in docs) {
             final data = d.data() as Map<String, dynamic>;
-            final dynamic ts = data['timestamp'];
-            if (ts == null || ts is! Timestamp) continue;
-            DateTime date = ts.toDate();
-            String visitorId = data['userId'] ?? data['deviceId'] ?? 'GUEST';
-            String dayKey = "${visitorId}_${date.year}${date.month}${date.day}";
-            dailyUniqueMap[dayKey] = true;
+            uniqueVisitors.add(_visitorKey(data, d.id));
+            sessions.add(_sessionKey(data, d.id));
           }
 
-          int totalUsersCount = dailyUniqueMap.length;
+          int totalUsersCount = uniqueVisitors.length;
+          int totalSessionsCount = sessions.length;
 
-          // --- CALCUL DES ACTIONS UNIQUES (1 action max / personne / jour) ---
-          int chatOpens = _countUniqueAction(docs, 'chat_open');
-          int forYouClicks = _countUniqueAction(docs, 'for_you_click');
-          int productOpens = _countUniqueAction(docs, 'product_view');
-          int addToCart = _countUniqueAction(docs, 'add_to_cart');
-          int chatRegenerate = _countUniqueAction(
+          int chatOpens = _countSessionsWithEvent(docs, 'chat_open');
+          int forYouClicks = _countSessionsWithEvent(docs, 'for_you_click');
+          int productOpens = _countSessionsWithEvent(docs, 'product_view');
+          int addToCart = _countSessionsWithEvent(docs, 'add_to_cart');
+          int reachedCheckout = _countSessionsWithEvent(
+            docs,
+            'reached_checkout',
+          );
+          int purchases = _countSessionsWithEvent(docs, 'purchase_completed');
+          int chatRegenerate = _countSessionsWithEvent(
             docs,
             'chat_regenerate_click',
           );
-          int shopScrollDeep = _countUniqueAction(docs, 'shop_scroll_deep');
+          int shopScrollDeep = _countSessionsWithEvent(
+            docs,
+            'shop_scroll_deep',
+          );
 
           return ListView(
             padding: const EdgeInsets.all(16),
             children: [
-              _buildHeaderSummary(totalUsersCount, docs.length),
+              _buildHeaderSummary(
+                totalUsersCount,
+                totalSessionsCount,
+                docs.length,
+              ),
               const SizedBox(height: 24),
               _buildSectionTitle("Actions Fortes (Taux d'engagement)"),
               _buildStatCard(
                 "Ajouts au Panier 🛒",
                 addToCart.toString(),
-                _calculateEngagement(addToCart, totalUsersCount),
+                _calculateRate(addToCart, totalSessionsCount),
                 Colors.green,
               ),
               _buildStatCard(
                 "Ouvertures Chatbot 🤖",
                 chatOpens.toString(),
-                _calculateEngagement(chatOpens, totalUsersCount),
+                _calculateRate(chatOpens, totalSessionsCount),
                 Colors.blue,
               ),
               _buildStatCard(
                 "Autre produit (IA) 🔄",
                 chatRegenerate.toString(),
-                _calculateEngagement(chatRegenerate, totalUsersCount),
+                _calculateRate(chatRegenerate, totalSessionsCount),
                 Colors.purple,
+              ),
+              _buildStatCard(
+                "Arrivées Checkout 💳",
+                reachedCheckout.toString(),
+                _calculateRate(reachedCheckout, totalSessionsCount),
+                Colors.indigo,
+              ),
+              _buildStatCard(
+                "Achats confirmés ✅",
+                purchases.toString(),
+                _calculateRate(purchases, totalSessionsCount),
+                Colors.green.shade700,
               ),
               const SizedBox(height: 24),
               _buildSectionTitle("Engagement Shop"),
               _buildStatCard(
                 "Scroll Profond 📜",
                 shopScrollDeep.toString(),
-                _calculateEngagement(shopScrollDeep, totalUsersCount),
+                _calculateRate(shopScrollDeep, totalSessionsCount),
                 Colors.teal,
               ),
               _buildStatCard(
                 "Clics 'Pour Toi' ✨",
                 forYouClicks.toString(),
-                _calculateEngagement(forYouClicks, totalUsersCount),
+                _calculateRate(forYouClicks, totalSessionsCount),
                 Colors.orange,
               ),
               _buildStatCard(
                 "Fiches Produits 🧴",
                 productOpens.toString(),
-                _calculateEngagement(productOpens, totalUsersCount),
+                _calculateRate(productOpens, totalSessionsCount),
                 Colors.pink,
               ),
               const SizedBox(height: 24),
@@ -207,7 +247,7 @@ class _ClicksPageState extends State<ClicksPage> {
               _buildDropOffStats(docs),
               const SizedBox(height: 24),
               _buildSectionTitle("Temps de Session"),
-              _buildTimeStats(docs, totalUsersCount),
+              _buildTimeStats(docs, totalSessionsCount),
               const SizedBox(height: 35),
             ],
           );
@@ -218,7 +258,7 @@ class _ClicksPageState extends State<ClicksPage> {
 
   // --- DESIGN DES COMPOSANTS ---
 
-  Widget _buildHeaderSummary(int users, int actions) {
+  Widget _buildHeaderSummary(int users, int sessions, int actions) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -229,12 +269,28 @@ class _ClicksPageState extends State<ClicksPage> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _summaryColumn("Visiteuses", users.toString(), Icons.people_outline),
+          Expanded(
+            child: _summaryColumn(
+              "Sessions",
+              sessions.toString(),
+              Icons.timeline_outlined,
+            ),
+          ),
           Container(width: 1, height: 40, color: Colors.pink.shade200),
-          _summaryColumn(
-            "Actions Totales",
-            actions.toString(),
-            Icons.touch_app_outlined,
+          Expanded(
+            child: _summaryColumn(
+              "Visiteuses",
+              users.toString(),
+              Icons.people_outline,
+            ),
+          ),
+          Container(width: 1, height: 40, color: Colors.pink.shade200),
+          Expanded(
+            child: _summaryColumn(
+              "Actions",
+              actions.toString(),
+              Icons.touch_app_outlined,
+            ),
           ),
         ],
       ),
@@ -275,7 +331,7 @@ class _ClicksPageState extends State<ClicksPage> {
       child: ListTile(
         title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
         subtitle: Text(
-          "Utilisatrices ayant cliqué : $percent",
+          "Sessions avec action : $percent",
           style: TextStyle(color: color.withOpacity(0.8), fontSize: 11),
         ),
         trailing: Column(
@@ -291,7 +347,7 @@ class _ClicksPageState extends State<ClicksPage> {
               ),
             ),
             const Text(
-              "clics",
+              "sessions",
               style: TextStyle(fontSize: 10, color: Colors.grey),
             ),
           ],
@@ -311,9 +367,8 @@ class _ClicksPageState extends State<ClicksPage> {
   }
 
   Widget _buildDropOffStats(List<QueryDocumentSnapshot> docs) {
-    // 1. On identifie la DERNIÈRE sortie de chaque utilisatrice par jour
-    // Map<DayKey, LastEventName>
-    final Map<String, String> lastExitPerUserDay = {};
+    // 1. On identifie la DERNIÈRE sortie de chaque session sur la période
+    final Map<String, String> lastExitPerSession = {};
 
     for (var d in docs) {
       final data = d.data() as Map<String, dynamic>;
@@ -327,27 +382,25 @@ class _ClicksPageState extends State<ClicksPage> {
         final dynamic ts = data['timestamp'];
         if (ts == null || ts is! Timestamp) continue;
 
-        DateTime date = ts.toDate();
-        String visitorId = data['userId'] ?? data['deviceId'] ?? 'GUEST';
-        String dayKey = "${visitorId}_${date.year}${date.month}${date.day}";
+        final sessionKey = _sessionKey(data, d.id);
 
         // Comme on a fait un 'orderBy timestamp descending', le premier
         // event de sortie qu'on croise est mathématiquement le DERNIER dans le temps.
-        if (!lastExitPerUserDay.containsKey(dayKey)) {
-          lastExitPerUserDay[dayKey] = event;
+        if (!lastExitPerSession.containsKey(sessionKey)) {
+          lastExitPerSession[sessionKey] = event;
         }
       }
     }
 
-    final totalUniqueExits = lastExitPerUserDay.length;
+    final totalUniqueExits = lastExitPerSession.length;
 
-    int homeExits = lastExitPerUserDay.values
+    int homeExits = lastExitPerSession.values
         .where((e) => e == 'last_seen_home')
         .length;
-    int chatExits = lastExitPerUserDay.values
+    int chatExits = lastExitPerSession.values
         .where((e) => e == 'last_seen_chat')
         .length;
-    int productExits = lastExitPerUserDay.values
+    int productExits = lastExitPerSession.values
         .where((e) => e == 'last_seen_product')
         .length;
 
@@ -386,10 +439,10 @@ class _ClicksPageState extends State<ClicksPage> {
   Widget _buildTimeStats(List<QueryDocumentSnapshot> docs, int totalUsers) {
     Map<String, List<DateTime>> sessions = {};
     for (var doc in docs) {
-      String uid =
-          doc['userId']?.toString() ?? doc['deviceId']?.toString() ?? 'GUEST';
-      Timestamp? ts = doc['timestamp'] as Timestamp?;
-      if (ts != null) sessions.putIfAbsent(uid, () => []).add(ts.toDate());
+      final data = doc.data() as Map<String, dynamic>;
+      final uid = _sessionKey(data, doc.id);
+      final ts = data['timestamp'];
+      if (ts is Timestamp) sessions.putIfAbsent(uid, () => []).add(ts.toDate());
     }
     int s = 0, m = 0, l = 0;
     sessions.forEach((uid, times) {

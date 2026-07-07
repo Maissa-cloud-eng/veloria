@@ -14,11 +14,13 @@ class _BannerManagerPageState extends State<BannerManagerPage> {
   // Contrôleurs pour saisir les URLs d'images
   final TextEditingController _frController = TextEditingController();
   final TextEditingController _enController = TextEditingController();
+  final TextEditingController _arController = TextEditingController();
 
   @override
   void dispose() {
     _frController.dispose();
     _enController.dispose();
+    _arController.dispose();
     super.dispose();
   }
 
@@ -93,6 +95,7 @@ class _BannerManagerPageState extends State<BannerManagerPage> {
 
           List<String> frBanners = [];
           List<String> enBanners = [];
+          List<String> arBanners = [];
 
           if (snapshot.hasData && snapshot.data!.exists) {
             final data = snapshot.data!.data() as Map<String, dynamic>;
@@ -100,6 +103,8 @@ class _BannerManagerPageState extends State<BannerManagerPage> {
               frBanners = List<String>.from(data['images_fr']);
             if (data['images_en'] != null)
               enBanners = List<String>.from(data['images_en']);
+            if (data['images_ar'] != null)
+              arBanners = List<String>.from(data['images_ar']);
           }
 
           return SingleChildScrollView(
@@ -125,6 +130,18 @@ class _BannerManagerPageState extends State<BannerManagerPage> {
                   langKey: "images_en",
                   controller: _enController,
                   currentUrls: enBanners,
+                ),
+
+                const SizedBox(height: 32),
+                const Divider(thickness: 2),
+                const SizedBox(height: 16),
+
+                // ================= SECTION ARABE =================
+                _buildLanguageSection(
+                  title: "🇩🇿 البانرات - العربية",
+                  langKey: "images_ar",
+                  controller: _arController,
+                  currentUrls: arBanners,
                 ),
               ],
             ),

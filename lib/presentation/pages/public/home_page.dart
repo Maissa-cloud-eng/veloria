@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:flutter/material.dart';
@@ -9,6 +7,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
 
 import 'package:veloria/auth_service.dart';
+import 'package:veloria/core/i18n/app_text.dart';
 import 'package:veloria/domain/entities/categories.dart';
 
 import 'package:veloria/domain/entities/product.dart';
@@ -24,7 +23,6 @@ import 'package:veloria/presentation/widgets/NativeAutoPlayCarousel.dart';
 import 'package:veloria/presentation/widgets/shake_btn.dart';
 
 import 'shop_page.dart';
-import 'package:device_info_plus/device_info_plus.dart'; // <--- AJOUTE ÇA
 
 // ===========================================================
 
@@ -37,6 +35,32 @@ const Color _kPrimaryPink = Colors.pink;
 final Color _kLightPinkBackground = Colors.pink.shade50;
 
 const String _kExcludedDocumentId = 'WbCiUVtZupXa5IXef2lI';
+
+String _homeCategoryLabel(CategoryData category, LanguageProvider language) {
+  if (language.isEn) return category.name_en;
+  if (!language.isAr) return category.name;
+  if (category.name_ar.trim().isNotEmpty) return category.name_ar;
+
+  const labels = {
+    'soins visage': 'العناية بالوجه',
+    'soins_visage': 'العناية بالوجه',
+    'visage': 'العناية بالوجه',
+    'cheveux': 'العناية بالشعر',
+    'maquillage': 'المكياج',
+    'soins corps': 'العناية بالجسم',
+    'corps': 'العناية بالجسم',
+    'solaire': 'واقيات الشمس',
+    'solaires': 'واقيات الشمس',
+    'brume': 'البخاخات',
+    'brumes': 'البخاخات',
+    'parfum': 'العطور',
+    'parfums': 'العطور',
+    'accessoires': 'الإكسسوارات',
+  };
+
+  final normalized = category.name.toLowerCase().trim();
+  return labels[normalized] ?? category.name;
+}
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -62,25 +86,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _trackVisit() async {
     try {
-      final user = FirebaseAuth.instance.currentUser;
-      final DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
-      String? deviceId;
-
-      // --- RÉCUPÉRATION DE L'ID UNIQUE DU TÉLÉPHONE ---
-      if (Platform.isAndroid) {
-        final androidInfo = await deviceInfo.androidInfo;
-        deviceId = androidInfo.id; // ID unique Android
-      } else if (Platform.isIOS) {
-        final iosInfo = await deviceInfo.iosInfo;
-        deviceId = iosInfo.identifierForVendor; // ID unique iOS
-      }
+      final analyticsContext = await getAnalyticsContext();
 
       await FirebaseFirestore.instance.collection('visits').add({
         'timestamp': FieldValue.serverTimestamp(),
-        'userId': user?.uid ?? "guest",
-        'deviceId': deviceId ?? "unknown", // <--- LE VOICI !
-        'platform': Platform.isAndroid ? "Android" : "iOS",
+        ...analyticsContext,
       });
+
+      await logEvent('session_start');
     } catch (e) {
       debugPrint("Erreur tracking visite: $e");
     }
@@ -113,10 +126,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final String currentLang = Provider.of<LanguageProvider>(
-      context,
-    ).selectedLanguage;
-    final bool isEn = currentLang == "Anglais";
     return Scaffold(
       backgroundColor: Colors.white,
 
@@ -174,22 +183,22 @@ class _HomeScreenState extends State<HomeScreen> {
                             border: Border.all(color: _kPrimaryPink, width: 1),
                           ),
 
-                          child: const Row(
+                          child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
 
                             children: [
-                              Icon(
+                              const Icon(
                                 Icons.admin_panel_settings,
 
                                 color: _kPrimaryPink,
                               ),
 
-                              SizedBox(width: 8),
+                              const SizedBox(width: 8),
 
                               Text(
-                                "Accéder au Dashboard Admin",
+                                context.t('home.adminDashboard'),
 
-                                style: TextStyle(
+                                style: const TextStyle(
                                   color: _kPrimaryPink,
 
                                   fontWeight: FontWeight.bold,
@@ -216,8 +225,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   final languageProvider = Provider.of<LanguageProvider>(
                     context,
                   );
-                  final bool isEn =
-                      languageProvider.selectedLanguage == "Anglais";
 
                   List<String> bannerImages = [];
 
@@ -253,7 +260,11 @@ class _HomeScreenState extends State<HomeScreen> {
                       snapshot.data!.exists) {
                     final data =
                         snapshot.data!.data() as Map<String, dynamic>? ?? {};
-                    final String languageKey = isEn ? 'images_en' : 'images_fr';
+                    final String languageKey = languageProvider.isAr
+                        ? 'images_ar'
+                        : languageProvider.isEn
+                        ? 'images_en'
+                        : 'images_fr';
 
                     if (data[languageKey] != null) {
                       bannerImages = List<String>.from(data[languageKey]);
@@ -291,7 +302,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 16),
 
                 child: Text(
-                  isEn ? "Categories" : "Catégories",
+                  context.t('home.categories'),
                   style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -320,9 +331,9 @@ class _HomeScreenState extends State<HomeScreen> {
                           .toList();
 
                       // On récupère la langue actuelle via le Provider
-                      final String currentLang = Provider.of<LanguageProvider>(
+                      final languageProvider = Provider.of<LanguageProvider>(
                         context,
-                      ).selectedLanguage;
+                      );
 
                       return Wrap(
                         spacing: 20,
@@ -333,9 +344,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
                           // 2. On choisit le libellé selon la langue
                           // Si c'est "Anglais", on prend name_en, sinon name (Français)
-                          final String displayLabel = (currentLang == "Anglais")
-                              ? category.name_en
-                              : category.name;
+                          final String displayLabel = _homeCategoryLabel(
+                            category,
+                            languageProvider,
+                          );
 
                           return _CategoryItem(
                             // On utilise l'icône définie dans l'objet
@@ -368,9 +380,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   },
 
                   child: Text(
-                    isEn
-                        ? "Create my beauty routine in 30s"
-                        : "Créer ma routine beauté en 30 sec",
+                    context.t('home.createRoutine'),
 
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
@@ -384,7 +394,7 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 30),
               // ... avant _buildNewArrivalsSection(isEn) ...
               // ===== NOUVEAUTÉS =====
-              _buildNewArrivalsSection(isEn),
+              _buildNewArrivalsSection(),
 
               const SubmitProductButton(),
 
@@ -396,7 +406,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildNewArrivalsSection(bool isEn) {
+  Widget _buildNewArrivalsSection() {
     return StreamBuilder<QuerySnapshot>(
       // CORRECTION : Ajout du tri par date (du plus récent au plus ancien)
       stream: FirebaseFirestore.instance
@@ -423,16 +433,24 @@ class _HomeScreenState extends State<HomeScreen> {
 
         if (newArrivals.isEmpty) return const SizedBox.shrink();
 
+        final language = Provider.of<LanguageProvider>(context);
+
         return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: language.isAr
+              ? CrossAxisAlignment.end
+              : CrossAxisAlignment.start,
           children: [
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Row(
+                textDirection: language.isAr
+                    ? TextDirection.rtl
+                    : TextDirection.ltr,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    isEn ? "✨ New Arrivals" : "✨ Nouveautés",
+                    context.t('home.newArrivals'),
+                    textAlign: language.isAr ? TextAlign.right : TextAlign.left,
                     style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -445,7 +463,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       MainWrapperState.jumpToShop(context, 'new_arrivals');
                     },
                     child: Text(
-                      isEn ? "See all" : "Voir tout",
+                      context.t('home.seeAll'),
                       style: const TextStyle(color: _kPrimaryPink),
                     ),
                   ),
@@ -457,6 +475,7 @@ class _HomeScreenState extends State<HomeScreen> {
               height: 360,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
+                reverse: language.isAr,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 itemCount: newArrivals.length,
                 itemBuilder: (context, index) {
@@ -572,7 +591,7 @@ class _SubmitProductButtonState extends State<SubmitProductButton>
     super.dispose();
   }
 
-  void _showBottomSheet(BuildContext context, bool isEn) {
+  void _showBottomSheet(BuildContext context) {
     final nameController = TextEditingController();
 
     final brandController = TextEditingController();
@@ -619,9 +638,7 @@ class _SubmitProductButtonState extends State<SubmitProductButton>
               ),
 
               Text(
-                isEn
-                    ? "Can't find your product?"
-                    : "Tu ne trouves pas ton produit ?",
+                context.t('home.cantFindProduct'),
 
                 style: const TextStyle(
                   fontSize: 18,
@@ -635,9 +652,7 @@ class _SubmitProductButtonState extends State<SubmitProductButton>
               const SizedBox(height: 5),
 
               Text(
-                isEn
-                    ? "Suggest it to us and we'll add it for you"
-                    : "Propose-le nous et nous l'ajouterons pour toi",
+                context.t('home.suggestProduct'),
 
                 style: const TextStyle(fontSize: 15, color: Colors.black54),
               ),
@@ -648,7 +663,7 @@ class _SubmitProductButtonState extends State<SubmitProductButton>
                 controller: nameController,
 
                 decoration: InputDecoration(
-                  hintText: isEn ? "Product name" : "Nom du produit",
+                  hintText: context.t('home.productName'),
 
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -662,7 +677,7 @@ class _SubmitProductButtonState extends State<SubmitProductButton>
                 controller: brandController,
 
                 decoration: InputDecoration(
-                  hintText: isEn ? "Brand" : "Marque",
+                  hintText: context.t('home.brand'),
 
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -716,11 +731,7 @@ class _SubmitProductButtonState extends State<SubmitProductButton>
 
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content: Text(
-                                    isEn
-                                        ? "Thank you! We'll let you know. ✨"
-                                        : "Merci ! On vous préviendra. ✨",
-                                  ),
+                                  content: Text(context.t('home.thankYou')),
 
                                   backgroundColor: _kPrimaryPink,
                                 ),
@@ -733,7 +744,7 @@ class _SubmitProductButtonState extends State<SubmitProductButton>
                       },
 
                       child: Text(
-                        isEn ? "Submit" : "Soumettre",
+                        context.t('home.submit'),
 
                         style: const TextStyle(
                           color: Colors.white,
@@ -751,13 +762,11 @@ class _SubmitProductButtonState extends State<SubmitProductButton>
 
   @override
   Widget build(BuildContext context) {
-    final bool isEn =
-        Provider.of<LanguageProvider>(context).selectedLanguage == "Anglais";
     return Padding(
       padding: const EdgeInsets.only(bottom: 70),
 
       child: GestureDetector(
-        onTap: () => _showBottomSheet(context, isEn),
+        onTap: () => _showBottomSheet(context),
 
         child: ScaleTransition(
           scale: _animation,
@@ -777,9 +786,7 @@ class _SubmitProductButtonState extends State<SubmitProductButton>
 
             child: Center(
               child: Text(
-                isEn
-                    ? "Can't find your product? Click here!"
-                    : "Tu ne trouves pas ton produit ? Clique ici !",
+                context.t('home.cantFindCta'),
 
                 style: const TextStyle(
                   color: _kPrimaryPink,

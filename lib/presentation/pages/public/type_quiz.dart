@@ -20,21 +20,31 @@ class _SkinQuizPageState extends State<SkinQuizPage> {
   };
 
   final Map<String, Map<String, String>> _localizedText = {
-    'title': {'FR': 'Mon Diagnostic Peau', 'EN': 'My Skin Diagnosis'},
-    'question_count': {'FR': 'Question', 'EN': 'Question'},
-    'of': {'FR': 'sur', 'EN': 'of'},
+    'title': {
+      'FR': 'Mon Diagnostic Peau',
+      'EN': 'My Skin Diagnosis',
+      'AR': 'تشخيص بشرتي',
+    },
+    'question_count': {'FR': 'Question', 'EN': 'Question', 'AR': 'السؤال'},
+    'of': {'FR': 'sur', 'EN': 'of', 'AR': 'من'},
     'result_intro': {
       'FR': 'Votre type de peau dominant est :',
       'EN': 'Your dominant skin type is:',
+      'AR': 'نوع بشرتك الغالب هو:',
     },
     'save_btn': {
       'FR': 'Enregistrer dans mon profil',
       'EN': 'Save to my profile',
+      'AR': 'حفظ في ملفي',
     },
-    'Sèche': {'FR': 'Peau Sèche', 'EN': 'Dry Skin'},
-    'Mixte': {'FR': 'Peau Mixte', 'EN': 'Combination Skin'},
-    'Grasse': {'FR': 'Peau Grasse', 'EN': 'Oily Skin'},
-    'Normale': {'FR': 'Peau Normale', 'EN': 'Normal Skin'},
+    'Sèche': {'FR': 'Peau Sèche', 'EN': 'Dry Skin', 'AR': 'بشرة جافة'},
+    'Mixte': {
+      'FR': 'Peau Mixte',
+      'EN': 'Combination Skin',
+      'AR': 'بشرة مختلطة',
+    },
+    'Grasse': {'FR': 'Peau Grasse', 'EN': 'Oily Skin', 'AR': 'بشرة دهنية'},
+    'Normale': {'FR': 'Peau Normale', 'EN': 'Normal Skin', 'AR': 'بشرة عادية'},
   };
 
   // Questions reformulées pour être sensorielles et moins prévisibles
@@ -45,12 +55,14 @@ class _SkinQuizPageState extends State<SkinQuizPage> {
             '1️⃣ Comment décririez-vous votre peau environ 15 minutes après le lavage ?',
         'EN':
             '1️⃣ How would you describe your skin about 15 minutes after washing?',
+        'AR': '1️⃣ كيف تصفين بشرتك بعد حوالي 15 دقيقة من غسل الوجه؟',
       },
       'answers': [
         {
           'text': {
             'FR': 'Inconfortable, elle me tiraille et manque de souplesse',
             'EN': 'Uncomfortable, tight, and lacks suppleness',
+            'AR': 'غير مريحة، مشدودة وتفتقد للمرونة',
           },
           'icon': Icons.waves, // Évoque la déshydratation / tiraillement
           'type': 'Sèche',
@@ -59,6 +71,7 @@ class _SkinQuizPageState extends State<SkinQuizPage> {
           'text': {
             'FR': 'Fraîche sur les joues, mais déjà un peu luisante sur le nez',
             'EN': 'Fresh on cheeks, but already a bit shiny on the nose',
+            'AR': 'منتعشة على الخدود، لكن الأنف بدأ يلمع قليلاً',
           },
           'icon': Icons.gradient,
           'type': 'Mixte',
@@ -69,6 +82,7 @@ class _SkinQuizPageState extends State<SkinQuizPage> {
                 'Complètement soulagée, mais elle commence déjà à briller partout',
             'EN':
                 'Completely relieved, but already starting to look shiny all over',
+            'AR': 'مرتاحة تماماً، لكنها بدأت تلمع في كامل الوجه',
           },
           'icon': Icons.opacity, // Évoque l'excès de sébum
           'type': 'Grasse',
@@ -77,6 +91,7 @@ class _SkinQuizPageState extends State<SkinQuizPage> {
           'text': {
             'FR': 'Parfaitement équilibrée, ni trop sèche ni trop luisante',
             'EN': 'Perfectly balanced, neither too dry nor too shiny',
+            'AR': 'متوازنة تماماً، لا جافة كثيراً ولا لامعة كثيراً',
           },
           'icon': Icons.check_circle_outline,
           'type': 'Normale',
@@ -88,6 +103,7 @@ class _SkinQuizPageState extends State<SkinQuizPage> {
         'FR':
             '2️⃣ Vers 16h en fin de journée, quel est votre réflexe ou constat principal ?',
         'EN': '2️⃣ Around 4 PM, what is your main observation or reflex?',
+        'AR': '2️⃣ حوالي الساعة الرابعة مساءً، ما أكثر شيء تلاحظينه؟',
       },
       'answers': [
         {
@@ -95,14 +111,16 @@ class _SkinQuizPageState extends State<SkinQuizPage> {
             'FR':
                 'Ma peau picote, rougit ou réagit aux variations de température',
             'EN': 'My skin tingles, flushes, or reacts to temperature changes',
+            'AR': 'بشرتي تلسع، تحمر أو تتأثر بتغير الحرارة',
           },
           'icon': Icons.error_outline,
-          'type': 'sèche',
+          'type': 'Sèche',
         },
         {
           'text': {
             'FR': 'Je dois poudrer ou éponger uniquement mon front et mon nez',
             'EN': 'I need to powder or blot only my forehead and nose',
+            'AR': 'أحتاج فقط لتخفيف اللمعان على الجبهة والأنف',
           },
           'icon': Icons.face,
           'type': 'Mixte',
@@ -111,6 +129,7 @@ class _SkinQuizPageState extends State<SkinQuizPage> {
           'text': {
             'FR': 'Le maquillage ne tient pas, toute ma zone faciale brille',
             'EN': 'Makeup doesn\'t stay put, my entire face is shiny',
+            'AR': 'المكياج لا يثبت، وكل وجهي يصبح لامعاً',
           },
           'icon': Icons.blur_on,
           'type': 'Grasse',
@@ -120,6 +139,7 @@ class _SkinQuizPageState extends State<SkinQuizPage> {
             'FR': 'Rien à signaler, mon teint reste net et confortable',
             'EN':
                 'Nothing to report, my complexion remains clear and comfortable',
+            'AR': 'لا شيء مزعج، بشرتي تبقى صافية ومريحة',
           },
           'icon': Icons.sentiment_satisfied_alt,
           'type': 'Normale',
@@ -131,6 +151,7 @@ class _SkinQuizPageState extends State<SkinQuizPage> {
         'FR':
             '3️⃣ Si vous observez votre grain de peau de près dans un miroir :',
         'EN': '3️⃣ If you look closely at your skin texture in a mirror:',
+        'AR': '3️⃣ عندما تنظرين إلى ملمس بشرتك عن قرب في المرآة:',
       },
       'answers': [
         {
@@ -138,6 +159,7 @@ class _SkinQuizPageState extends State<SkinQuizPage> {
             'FR':
                 'Les pores sont invisibles, mais j\'ai de petites ridules ou squames',
             'EN': 'Pores are invisible, but I have fine lines or dry patches',
+            'AR': 'المسام غير واضحة، لكن لدي خطوط رفيعة أو مناطق جافة',
           },
           'icon': Icons.texture,
           'type': 'Sèche',
@@ -146,6 +168,7 @@ class _SkinQuizPageState extends State<SkinQuizPage> {
           'text': {
             'FR': 'Les pores sont dilatés uniquement sur le nez et le menton',
             'EN': 'Pores are enlarged only on the nose and chin',
+            'AR': 'المسام واسعة فقط على الأنف والذقن',
           },
           'icon': Icons.grain,
           'type': 'Mixte',
@@ -155,6 +178,7 @@ class _SkinQuizPageState extends State<SkinQuizPage> {
             'FR':
                 'Le relief est irrégulier avec des pores visibles sur tout le visage',
             'EN': 'Texture is uneven with visible pores across the whole face',
+            'AR': 'الملمس غير منتظم والمسام ظاهرة في كامل الوجه',
           },
           'icon': Icons.apps,
           'type': 'Grasse',
@@ -178,8 +202,10 @@ class _SkinQuizPageState extends State<SkinQuizPage> {
 
   @override
   Widget build(BuildContext context) {
-    final String lang =
-        Provider.of<LanguageProvider>(context).selectedLanguage == "Anglais"
+    final languageCode = Provider.of<LanguageProvider>(context).languageCode;
+    final String lang = languageCode == "ar"
+        ? "AR"
+        : languageCode == "en"
         ? "EN"
         : "FR";
 

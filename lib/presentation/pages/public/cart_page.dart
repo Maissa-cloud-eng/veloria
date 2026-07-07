@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart'; // Import ajouté
+import 'package:veloria/core/i18n/app_text.dart';
 import 'package:veloria/domain/entities/product.dart';
 import 'package:veloria/presentation/controllers/cart_controllers.dart';
+import 'package:veloria/presentation/pages/admin/analytics_helper.dart';
 import 'package:veloria/presentation/pages/public/checkout_page.dart';
 import 'package:veloria/presentation/pages/public/product_page.dart';
 import 'package:veloria/presentation/states/language_provider.dart'; // Import ajouté
@@ -70,10 +72,11 @@ class _CartPageState extends State<CartPage> {
   Widget build(BuildContext context) {
     // RÉCUPÉRATION DE LA LANGUE
     final languageProvider = Provider.of<LanguageProvider>(context);
-    final bool isEn = languageProvider.selectedLanguage == 'Anglais';
+    final bool isEn = languageProvider.isEn;
+    final bool isAr = languageProvider.isAr;
 
     // TEXTES TRADUITS
-    final String appBarTitle = isEn ? "My Cart" : "Mon Panier";
+    final String appBarTitle = context.t("cart.title");
 
     return Scaffold(
       backgroundColor: Colors.pink.shade50,
@@ -96,7 +99,7 @@ class _CartPageState extends State<CartPage> {
           }
 
           if (!snapshot.hasData || !snapshot.data!.exists) {
-            return _buildEmptyState(isEn);
+            return _buildEmptyState();
           }
 
           final data = snapshot.data!.data() as Map<String, dynamic>;
@@ -104,7 +107,7 @@ class _CartPageState extends State<CartPage> {
           final String status = data['status'] ?? '';
 
           if (status == 'ordered' || items.isEmpty) {
-            return _buildEmptyState(isEn);
+            return _buildEmptyState();
           }
 
           return Padding(
@@ -131,12 +134,12 @@ class _CartPageState extends State<CartPage> {
                           ),
                           child: const Icon(Icons.delete, color: Colors.white),
                         ),
-                        child: _buildCartCard(item, items, index, isEn),
+                        child: _buildCartCard(item, items, index, isEn, isAr),
                       );
                     },
                   ),
                 ),
-                _buildSummary(items, isEn),
+                _buildSummary(items, isEn, isAr),
               ],
             ),
           );
@@ -145,7 +148,7 @@ class _CartPageState extends State<CartPage> {
     );
   }
 
-  Widget _buildEmptyState(bool isEn) {
+  Widget _buildEmptyState() {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -157,7 +160,7 @@ class _CartPageState extends State<CartPage> {
           ),
           const SizedBox(height: 16),
           Text(
-            isEn ? "Your cart is empty" : "Votre panier est vide",
+            context.t("cart.empty"),
             style: const TextStyle(
               fontSize: 18,
               color: Colors.black54,
@@ -174,14 +177,20 @@ class _CartPageState extends State<CartPage> {
     List allItems,
     int index,
     bool isEn,
+    bool isAr,
   ) {
     String displayPrice = item['price'].toString();
-    if (!displayPrice.toUpperCase().contains('DA')) {
-      displayPrice = "$displayPrice DA";
-    }
+    displayPrice = AppText.formatPrice(
+      isAr ? 'ar' : (isEn ? 'en' : 'fr'),
+      displayPrice.toUpperCase().contains('DA')
+          ? displayPrice.replaceAll(RegExp(r'\s*DA', caseSensitive: false), '')
+          : displayPrice,
+    );
 
     // GESTION DU TITRE BILINGUE DANS LA CARTE
-    final String displayTitle = isEn
+    final String displayTitle = isAr
+        ? (item['title_ar'] ?? item['titleAr'] ?? item['title'] ?? 'Produit')
+        : isEn
         ? (item['title_en'] ??
               item['titleEn'] ??
               item['nameEn'] ??
@@ -336,7 +345,7 @@ class _CartPageState extends State<CartPage> {
     );
   }
 
-  Widget _buildSummary(List items, bool isEn) {
+  Widget _buildSummary(List items, bool isEn, bool isAr) {
     final double totalAmount = _calculateTotal(items);
     return Container(
       padding: const EdgeInsets.only(top: 20),
@@ -349,14 +358,17 @@ class _CartPageState extends State<CartPage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                isEn ? "Total" : "Total",
+                context.t("cart.total"),
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w500,
                 ),
               ),
               Text(
-                "${totalAmount.toStringAsFixed(2)} DA",
+                AppText.formatPrice(
+                  isAr ? 'ar' : (isEn ? 'en' : 'fr'),
+                  totalAmount.toStringAsFixed(2),
+                ),
                 style: const TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
@@ -375,6 +387,8 @@ class _CartPageState extends State<CartPage> {
                   : () async {
                       final user = FirebaseAuth.instance.currentUser;
 
+                      await logEvent('reached_checkout');
+
                       if (user != null) {
                         try {
                           await FirebaseFirestore.instance
@@ -389,28 +403,31 @@ class _CartPageState extends State<CartPage> {
                         }
                       }
 
+                      if (!mounted) return;
+
                       // PRÉPARATION DES ITEMS AVEC TITRE ANGLAIS POUR LE CHECKOUT
-                      final List<Map<String, dynamic>> itemsForCheckout = items
-                          .map((item) {
-                            return {
-                              'productId':
-                                  item['productId'] ?? item['id'] ?? '',
-                              'title': item['title'] ?? 'Produit',
-                              'title_en':
-                                  item['title_en'] ??
-                                  item['titleEn'] ??
-                                  item['title'],
-                              'brand':
-                                  item['brand'] ??
-                                  (isEn ? 'Unknown' : 'Marque inconnue'),
-                              'price': item['price'] ?? 0,
-                              'quantity': item['quantity'] ?? 1,
-                              'costPrice': item['costPrice'] ?? 0,
-                              'imageUrl': item['imageUrl'] ?? '',
-                              'variantName': item['variantName'],
-                            };
-                          })
-                          .toList();
+                      final List<Map<String, dynamic>>
+                      itemsForCheckout = items.map((item) {
+                        return {
+                          'productId': item['productId'] ?? item['id'] ?? '',
+                          'title': item['title'] ?? 'Produit',
+                          'title_en':
+                              item['title_en'] ??
+                              item['titleEn'] ??
+                              item['title'],
+                          'title_ar':
+                              item['title_ar'] ??
+                              item['titleAr'] ??
+                              item['title'],
+                          'brand':
+                              item['brand'] ?? context.t("cart.unknownBrand"),
+                          'price': item['price'] ?? 0,
+                          'quantity': item['quantity'] ?? 1,
+                          'costPrice': item['costPrice'] ?? 0,
+                          'imageUrl': item['imageUrl'] ?? '',
+                          'variantName': item['variantName'],
+                        };
+                      }).toList();
 
                       if (context.mounted) {
                         Navigator.push(
@@ -431,7 +448,7 @@ class _CartPageState extends State<CartPage> {
                 ),
               ),
               child: Text(
-                isEn ? "Checkout" : "Valider mon panier",
+                context.t("cart.checkout"),
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 18,

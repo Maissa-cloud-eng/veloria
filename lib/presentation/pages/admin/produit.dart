@@ -22,12 +22,14 @@ class CategoryCache {
 class FlavorController {
   final TextEditingController name = TextEditingController();
   final TextEditingController nameEn = TextEditingController();
+  final TextEditingController nameAr = TextEditingController();
   final TextEditingController color = TextEditingController();
   final TextEditingController image = TextEditingController();
 
   void dispose() {
     name.dispose();
     nameEn.dispose();
+    nameAr.dispose();
     color.dispose();
     image.dispose();
   }
@@ -50,12 +52,16 @@ class _ProductAdminScreenState extends State<ProductAdminScreen>
   // Contrôleurs
   final TextEditingController _titleCtrl = TextEditingController();
   final TextEditingController _titleEnCtrl = TextEditingController();
+  final TextEditingController _titleArCtrl = TextEditingController();
   final TextEditingController _descCtrl = TextEditingController();
   final TextEditingController _descEnCtrl = TextEditingController();
+  final TextEditingController _descArCtrl = TextEditingController();
   final TextEditingController _usageTipsCtrl = TextEditingController();
   final TextEditingController _usageTipsEnCtrl = TextEditingController();
+  final TextEditingController _usageTipsArCtrl = TextEditingController();
   final TextEditingController _badgeCtrl = TextEditingController();
   final TextEditingController _badgeEnCtrl = TextEditingController();
+  final TextEditingController _badgeArCtrl = TextEditingController();
   final TextEditingController _categoryCtrl = TextEditingController();
   final TextEditingController _categoryEnCtrl = TextEditingController();
   final TextEditingController _subCatCtrl = TextEditingController();
@@ -98,12 +104,16 @@ class _ProductAdminScreenState extends State<ProductAdminScreen>
     }
     _titleCtrl.dispose();
     _titleEnCtrl.dispose();
+    _titleArCtrl.dispose();
     _descCtrl.dispose();
     _descEnCtrl.dispose();
+    _descArCtrl.dispose();
     _usageTipsCtrl.dispose();
     _usageTipsEnCtrl.dispose();
+    _usageTipsArCtrl.dispose();
     _badgeCtrl.dispose();
     _badgeEnCtrl.dispose();
+    _badgeArCtrl.dispose();
     _categoryCtrl.dispose();
     _categoryEnCtrl.dispose();
     _subCatCtrl.dispose();
@@ -129,12 +139,16 @@ class _ProductAdminScreenState extends State<ProductAdminScreen>
       _editingProductId = doc.id;
       _titleCtrl.text = data['title'] ?? '';
       _titleEnCtrl.text = data['title_en'] ?? '';
+      _titleArCtrl.text = data['title_ar'] ?? '';
       _descCtrl.text = data['description'] ?? '';
       _descEnCtrl.text = data['description_en'] ?? '';
+      _descArCtrl.text = data['description_ar'] ?? '';
       _usageTipsCtrl.text = data['usageTips'] ?? '';
       _usageTipsEnCtrl.text = data['usageTips_en'] ?? '';
+      _usageTipsArCtrl.text = data['usageTips_ar'] ?? '';
       _badgeCtrl.text = data['customBadge'] ?? '';
       _badgeEnCtrl.text = data['customBadge_en'] ?? '';
+      _badgeArCtrl.text = data['customBadge_ar'] ?? '';
       _categoryCtrl.text = data['category'] ?? '';
       _categoryEnCtrl.text = data['category_en'] ?? '';
       _subCatCtrl.text = data['subCategory'] ?? '';
@@ -160,6 +174,7 @@ class _ProductAdminScreenState extends State<ProductAdminScreen>
           final nf = FlavorController();
           nf.name.text = f['name'] ?? '';
           nf.nameEn.text = f['name_en'] ?? '';
+          nf.nameAr.text = f['name_ar'] ?? '';
           nf.color.text = f['color'] ?? '';
           nf.image.text = f['imageUrl'] ?? '';
           _flavors.add(nf);
@@ -172,6 +187,29 @@ class _ProductAdminScreenState extends State<ProductAdminScreen>
   void _resetForm() {
     _formKey.currentState?.reset();
     _editingProductId = null;
+    _titleCtrl.clear();
+    _titleEnCtrl.clear();
+    _titleArCtrl.clear();
+    _descCtrl.clear();
+    _descEnCtrl.clear();
+    _descArCtrl.clear();
+    _usageTipsCtrl.clear();
+    _usageTipsEnCtrl.clear();
+    _usageTipsArCtrl.clear();
+    _badgeCtrl.clear();
+    _badgeEnCtrl.clear();
+    _badgeArCtrl.clear();
+    _categoryCtrl.clear();
+    _categoryEnCtrl.clear();
+    _subCatCtrl.clear();
+    _subCatEnCtrl.clear();
+    _brandCtrl.clear();
+    _imageCtrl.clear();
+    _priceCtrl.clear();
+    _costPriceCtrl.clear();
+    _tagsCtrl.clear();
+    _isNewArrival = true;
+    _isOutOfStock = false;
     _originCtrl.text = "Local";
     _compositionCtrl.clear();
     _contentsCtrl.clear();
@@ -215,6 +253,7 @@ class _ProductAdminScreenState extends State<ProductAdminScreen>
               'name_en': f.nameEn.text.trim().isEmpty
                   ? f.name.text.trim()
                   : f.nameEn.text.trim(),
+              'name_ar': f.nameAr.text.trim(),
               'color': f.color.text.trim().isEmpty
                   ? "#000000"
                   : f.color.text.trim(),
@@ -230,14 +269,19 @@ class _ProductAdminScreenState extends State<ProductAdminScreen>
         _unitCtrl.text.trim().isEmpty ? 'ml' : _unitCtrl.text.trim(),
       );
       Map<String, dynamic> pData = {
-        'title': _titleCtrl.text.trim(), 'title_en': _titleEnCtrl.text.trim(),
+        'title': _titleCtrl.text.trim(),
+        'title_en': _titleEnCtrl.text.trim(),
+        'title_ar': _titleArCtrl.text.trim(),
         'slug': slug,
         'description': _descCtrl.text.trim(),
         'description_en': _descEnCtrl.text.trim(),
+        'description_ar': _descArCtrl.text.trim(),
         'usageTips': _usageTipsCtrl.text.trim(),
         'usageTips_en': _usageTipsEnCtrl.text.trim(),
+        'usageTips_ar': _usageTipsArCtrl.text.trim(),
         'customBadge': _badgeCtrl.text.trim(),
         'customBadge_en': _badgeEnCtrl.text.trim(),
+        'customBadge_ar': _badgeArCtrl.text.trim(),
         'category': _categoryCtrl.text.trim(),
         'category_en': _categoryEnCtrl.text.trim(),
         'subCategory': _subCatCtrl.text.trim(),
@@ -378,9 +422,14 @@ class _ProductAdminScreenState extends State<ProductAdminScreen>
                   return {
                     'name': (s['name'] ?? '').toString(),
                     'name_en': (s['name_en'] ?? '').toString(),
+                    'name_ar': (s['name_ar'] ?? '').toString(),
                   };
                 }
-                return {'name': s.toString(), 'name_en': s.toString()};
+                return {
+                  'name': s.toString(),
+                  'name_en': s.toString(),
+                  'name_ar': s.toString(),
+                };
               }).toList();
               return CategoryCache(
                 name: d['name'] ?? '',
@@ -416,11 +465,24 @@ class _ProductAdminScreenState extends State<ProductAdminScreen>
           children: [
             _buildField(_titleCtrl, "Titre FR"),
             _buildField(_titleEnCtrl, "Title EN"),
+            _buildField(
+              _titleArCtrl,
+              "العنوان AR",
+              textDirection: TextDirection.rtl,
+            ),
             Row(
               children: [
                 Expanded(child: _buildField(_badgeCtrl, "Badge FR")),
                 const SizedBox(width: 8),
                 Expanded(child: _buildField(_badgeEnCtrl, "Badge EN")),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _buildField(
+                    _badgeArCtrl,
+                    "الشارة AR",
+                    textDirection: TextDirection.rtl,
+                  ),
+                ),
               ],
             ),
 
@@ -474,11 +536,23 @@ class _ProductAdminScreenState extends State<ProductAdminScreen>
             _buildField(_descCtrl, "Description FR", maxLines: 2),
             _buildField(_descEnCtrl, "Description EN", maxLines: 2),
             _buildField(
+              _descArCtrl,
+              "الوصف AR",
+              maxLines: 2,
+              textDirection: TextDirection.rtl,
+            ),
+            _buildField(
               _usageTipsCtrl,
               "Conseils d'utilisation FR",
               maxLines: 2,
             ),
             _buildField(_usageTipsEnCtrl, "Usage Tips EN", maxLines: 2),
+            _buildField(
+              _usageTipsArCtrl,
+              "طريقة الاستخدام AR",
+              maxLines: 2,
+              textDirection: TextDirection.rtl,
+            ),
             _buildField(
               _compositionCtrl,
               "Composition / Ingrédients",
@@ -615,6 +689,11 @@ class _ProductAdminScreenState extends State<ProductAdminScreen>
           ),
           _buildField(_flavors[i].name, "Nom Variante FR"),
           _buildField(_flavors[i].nameEn, "Name Variant EN"),
+          _buildField(
+            _flavors[i].nameAr,
+            "اسم المتغير AR",
+            textDirection: TextDirection.rtl,
+          ),
           Row(
             children: [
               Expanded(
@@ -817,6 +896,7 @@ class _ProductAdminScreenState extends State<ProductAdminScreen>
     String label, {
     int maxLines = 1,
     bool isNumber = false,
+    TextDirection? textDirection,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -824,6 +904,10 @@ class _ProductAdminScreenState extends State<ProductAdminScreen>
         controller: ctrl,
         maxLines: maxLines,
         keyboardType: isNumber ? TextInputType.number : TextInputType.text,
+        textDirection: textDirection,
+        textAlign: textDirection == TextDirection.rtl
+            ? TextAlign.right
+            : TextAlign.start,
         decoration: InputDecoration(
           labelText: label,
           border: const OutlineInputBorder(),
@@ -833,6 +917,7 @@ class _ProductAdminScreenState extends State<ProductAdminScreen>
         validator: (v) =>
             (v == null || v.isEmpty) &&
                 !label.contains("EN") &&
+                !label.contains("AR") &&
                 !label.contains("Badge") &&
                 !label.contains("Composition") &&
                 !label.contains("Conseils")

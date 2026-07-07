@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:veloria/core/i18n/app_text.dart';
 import 'package:veloria/domain/entities/product.dart';
 import 'package:veloria/presentation/controllers/cart_controllers.dart';
 import 'package:veloria/presentation/pages/public/cart_page.dart';
@@ -36,6 +37,108 @@ class _BeautyQuizPageState extends State<BeautyQuizPage> {
   bool isHairColored = false;
   bool isBlonde = false;
   bool _isLoadingResult = false;
+
+  bool get isAr =>
+      Provider.of<LanguageProvider>(context, listen: false).languageCode ==
+      'ar';
+
+  String _q(String fr, String en, String ar) => isAr ? ar : (isEn ? en : fr);
+
+  String _badgeText(String value) {
+    final key = value.toLowerCase().trim();
+    final labels = <String, List<String>>{
+      'hydratation': ['Hydratation', 'Hydration', 'ترطيب'],
+      'réparation': ['Réparation', 'Repair', 'ترميم'],
+      'reparation': ['Réparation', 'Repair', 'ترميم'],
+      'brillance': ['Brillance', 'Shine', 'لمعان'],
+      'anti-chute': ['Anti-chute', 'Anti-hair loss', 'ضد التساقط'],
+      'volume': ['Volume', 'Volume', 'حجم'],
+      'anti-imperfections': [
+        'Anti-imperfections',
+        'Anti-imperfections',
+        'ضد الشوائب',
+      ],
+      'éclat': ['Éclat', 'Radiance', 'إشراقة'],
+      'eclat': ['Éclat', 'Radiance', 'إشراقة'],
+      'anti-âge': ['Anti-âge', 'Anti-aging', 'مضاد للتقدم في السن'],
+      'anti-age': ['Anti-âge', 'Anti-aging', 'مضاد للتقدم في السن'],
+      'apaisant': ['Apaisant', 'Soothing', 'تهدئة'],
+      'boutons': ['Boutons & Acné', 'Pimple & Acne', 'حبوب وحب الشباب'],
+      'taches': ['Taches & Cicatrices', 'Dark Spots & Marks', 'بقع وآثار'],
+      'entretenir': ['Entretenir', 'Maintain', 'عناية يومية'],
+      'maintenance': ['Maintenance', 'Maintenance', 'عناية مستمرة'],
+      'lisses': ['Lisses', 'Straight', 'أملس'],
+      'ondulés': ['Ondulés', 'Wavy', 'مموج'],
+      'bouclés': ['Bouclés', 'Curly', 'كيرلي'],
+      'frisés': ['Frisés', 'Coily', 'مجعد'],
+      'crépus': ['Crépus', 'Kinky', 'أفرو'],
+      'secs': ['Secs', 'Dry', 'جاف'],
+      'normaux': ['Normaux', 'Normal', 'عادي'],
+      'gras': ['Gras', 'Oily', 'دهني'],
+      'mixtes': ['Mixtes', 'Combination', 'مختلط'],
+      'sèche': ['Sèche', 'Dry Skin', 'جافة'],
+      'seche': ['Sèche', 'Dry Skin', 'جافة'],
+      'très sèche': ['Très Sèche', 'Very Dry Skin', 'جافة جداً'],
+      'tres seche': ['Très Sèche', 'Very Dry Skin', 'جافة جداً'],
+      'très_sèche': ['Très Sèche', 'Very Dry Skin', 'جافة جداً'],
+      'tres_seche': ['Très Sèche', 'Very Dry Skin', 'جافة جداً'],
+      'normale': ['Normale', 'Normal Skin', 'عادية'],
+      'grasse': ['Grasse', 'Oily Skin', 'دهنية'],
+      'mixte': ['Mixte', 'Combination Skin', 'مختلطة'],
+      'sensible': ['Sensible', 'Sensitive Skin', 'حساسة'],
+      'teint': ['Teint', 'Complexion', 'البشرة'],
+      'yeux': ['Yeux', 'Eyes', 'العيون'],
+      'lèvres': ['Lèvres', 'Lips', 'الشفاه'],
+      'levres': ['Lèvres', 'Lips', 'الشفاه'],
+      'lumineux': ['Lumineux', 'Radiant', 'مشرق'],
+      'mat': ['Mat', 'Matte', 'مطفي'],
+      'matte': ['Mat', 'Matte', 'مطفي'],
+      'glossy': ['Brillant', 'Glossy', 'لامع'],
+      'couvrance_moyenne': [
+        'Couvrance Moyenne',
+        'Medium Coverage',
+        'تغطية متوسطة',
+      ],
+      'haute_couvrance': ['Haute Couvrance', 'Full Coverage', 'تغطية عالية'],
+      'naturel': ['Naturel', 'Natural Look', 'طبيعي'],
+      'intense': ['Intense', 'Bold Look', 'قوي'],
+      'waterproof': ['Waterproof', 'Waterproof', 'مقاوم للماء'],
+      'baume_tinté': ['Baume Teinté', 'Tinted Balm', 'بلسم ملون'],
+      'baume_teinte': ['Baume Teinté', 'Tinted Balm', 'بلسم ملون'],
+      'blush': ['Blush', 'Blush', 'بلاشر'],
+      'highlighter': ['Highlighter', 'Highlighter', 'هايلايتر'],
+      'highligher': ['Highlighter', 'Highlighter', 'هايلايتر'],
+      'poudre': ['Poudre', 'Powder', 'بودرة'],
+      'spray fixateur': ['Spray Fixateur', 'Setting Spray', 'بخاخ تثبيت'],
+      'anti-cernes': ['Anti-cernes', 'Concealer', 'كونسيلر'],
+      'anti-cerne': ['Anti-cernes', 'Concealer', 'كونسيلر'],
+      'sourcils': ['Sourcils', 'Eyebrows', 'الحواجب'],
+      'soucils': ['Sourcils', 'Eyebrows', 'الحواجب'],
+      'mascara': ['Mascara', 'Mascara', 'ماسكارا'],
+      'eyeliner': ['Eyeliner', 'Eyeliner', 'آيلاينر'],
+      'crayon à lèvres': ['Crayon à lèvres', 'Lip liner', 'قلم شفاه'],
+      'crayon a levres': ['Crayon à lèvres', 'Lip liner', 'قلم شفاه'],
+      'rouge à lèvres': ['Rouge à lèvres', 'Lipstick', 'أحمر شفاه'],
+      'rouge a levres': ['Rouge à lèvres', 'Lipstick', 'أحمر شفاه'],
+      'gloss': ['Gloss', 'Gloss', 'غلوس'],
+      'encre à lèvres': ['Encre à lèvres', 'Lip tint', 'تينت شفاه'],
+      'encre a levres': ['Encre à lèvres', 'Lip tint', 'تينت شفاه'],
+      'encres à lèvres': ['Encre à lèvres', 'Lip tint', 'تينت شفاه'],
+      'encres a levres': ['Encre à lèvres', 'Lip tint', 'تينت شفاه'],
+      'gel douche': ['Gel douche', 'Body wash', 'جل استحمام'],
+      'gommage': ['Gommage', 'Body scrub', 'مقشر جسم'],
+      'lait corporel': ['Lait corporel', 'Body lotion', 'لوشن جسم'],
+      'shampooing': ['Shampooing', 'Shampoo', 'شامبو'],
+      'masque': ['Masque', 'Mask', 'ماسك'],
+      'après-shampooing': ['Après-shampooing', 'Conditioner', 'بلسم'],
+      'apres-shampooing': ['Après-shampooing', 'Conditioner', 'بلسم'],
+      'sérum/huile': ['Sérum/Huile', 'Serum/Oil', 'سيروم/زيت'],
+      'serum/huile': ['Sérum/Huile', 'Serum/Oil', 'سيروم/زيت'],
+    };
+    final label = labels[key];
+    if (label == null) return value;
+    return isAr ? label[2] : (isEn ? label[1] : label[0]);
+  }
 
   bool isLoading = true; // Par défaut, on considère qu'on charge les données
   String? blondeRoutinePreference;
@@ -222,9 +325,11 @@ class _BeautyQuizPageState extends State<BeautyQuizPage> {
           // 🟢 ON ENVELOPPE LE TEXT DANS UN EXPANDED
           Expanded(
             child: Text(
-              isEn
-                  ? "We remembered your ${getTranslatedBadge(info, isEn)} profile!"
-                  : "On a gardé ton profil ($info) en mémoire !",
+              _q(
+                "On a gardé ton profil (${getTranslatedBadge(info, isEn)}) en mémoire !",
+                "We remembered your ${getTranslatedBadge(info, isEn)} profile!",
+                "تذكرنا ملفك (${getTranslatedBadge(info, isEn)})!",
+              ),
               style: TextStyle(
                 color: Colors.pink[700],
                 fontSize: 13,
@@ -534,9 +639,11 @@ class _BeautyQuizPageState extends State<BeautyQuizPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              isEn
-                  ? "No other product available for this step."
-                  : "Aucun autre produit disponible pour cette étape.",
+              _q(
+                "Aucun autre produit disponible pour cette étape.",
+                "No other product available for this step.",
+                "لا يوجد منتج آخر متاح لهذه الخطوة.",
+              ),
             ),
             behavior: SnackBarBehavior.floating,
             backgroundColor: const Color(0xFFB76E79),
@@ -988,11 +1095,8 @@ class _BeautyQuizPageState extends State<BeautyQuizPage> {
   @override
   Widget build(BuildContext context) {
     isEn =
-        Provider.of<LanguageProvider>(
-          context,
-          listen: false,
-        ).selectedLanguage ==
-        "Anglais";
+        Provider.of<LanguageProvider>(context, listen: false).languageCode ==
+        "en";
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -1059,9 +1163,11 @@ class _BeautyQuizPageState extends State<BeautyQuizPage> {
                         ),
                         const SizedBox(height: 24),
                         Text(
-                          isEn
-                              ? "Analyzing your answers..."
-                              : "Analyse de vos réponses...",
+                          _q(
+                            "Analyse de vos réponses...",
+                            "Analyzing your answers...",
+                            "تحليل إجاباتك...",
+                          ),
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w600,
@@ -1070,9 +1176,11 @@ class _BeautyQuizPageState extends State<BeautyQuizPage> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          isEn
-                              ? "We are preparing your custom routine"
-                              : "Nous préparons votre routine sur-mesure",
+                          _q(
+                            "Nous préparons votre routine sur-mesure",
+                            "We are preparing your custom routine",
+                            "نحضّر روتينك المخصص",
+                          ),
                           style: const TextStyle(color: Colors.grey),
                         ),
                       ],
@@ -1113,11 +1221,23 @@ class _BeautyQuizPageState extends State<BeautyQuizPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          isEn ? "Total Routine" : "Total Routine",
+                          _q("Total Routine", "Total Routine", "مجموع الروتين"),
                           style: TextStyle(color: Colors.grey, fontSize: 12),
                         ),
                         Text(
-                          "${results.fold(0.0, (sum, item) => sum + (double.tryParse(item['price'].toString()) ?? 0))} DA",
+                          AppText.formatPrice(
+                            Provider.of<LanguageProvider>(
+                              context,
+                              listen: false,
+                            ).languageCode,
+                            results.fold<double>(
+                              0.0,
+                              (sum, item) =>
+                                  sum +
+                                  (double.tryParse(item['price'].toString()) ??
+                                      0),
+                            ),
+                          ),
                           style: const TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
@@ -1147,9 +1267,11 @@ class _BeautyQuizPageState extends State<BeautyQuizPage> {
                               ),
                             ),
                             child: Text(
-                              isEn
-                                  ? "I WANT THIS ROUTINE"
-                                  : "JE VEUX CETTE ROUTINE",
+                              _q(
+                                "JE VEUX CETTE ROUTINE",
+                                "I WANT THIS ROUTINE",
+                                "أريد هذا الروتين",
+                              ),
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
@@ -1203,6 +1325,7 @@ class _BeautyQuizPageState extends State<BeautyQuizPage> {
             'productId': product['id'],
             'title': product['title'],
             'title_en': product['title_en'] ?? product['title'],
+            'title_ar': product['title_ar'] ?? product['title'],
             'brand': product['brand'] ?? '',
             'price': double.tryParse(product['price'].toString()) ?? 0.0,
             'costPrice':
@@ -1236,7 +1359,11 @@ class _BeautyQuizPageState extends State<BeautyQuizPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              isEn ? "Full routine added!" : "Routine complète ajoutée !",
+              _q(
+                "Routine complète ajoutée !",
+                "Full routine added!",
+                "تمت إضافة الروتين الكامل!",
+              ),
               style: const TextStyle(fontWeight: FontWeight.w500),
             ),
             // --- CHANGEMENT DE COULEUR ---
@@ -1249,7 +1376,7 @@ class _BeautyQuizPageState extends State<BeautyQuizPage> {
               15,
             ), // Pour qu'elle ne touche pas les bords
             action: SnackBarAction(
-              label: isEn ? "VIEW" : "VOIR",
+              label: _q("VOIR", "VIEW", "عرض"),
               // On met le texte du bouton en rose pour le rappel de marque
               textColor: Colors.pink[200],
               onPressed: () => Navigator.push(
@@ -1268,27 +1395,29 @@ class _BeautyQuizPageState extends State<BeautyQuizPage> {
 
   Widget _buildCategoryStep() {
     return _buildSelectionGrid(
-      title: isEn
-          ? "Which universe interests you?"
-          : "Quel univers t'intéresse ?",
+      title: _q(
+        "Quel univers t'intéresse ?",
+        "Which universe interests you?",
+        "أي عالم يهمك؟",
+      ),
       options: [
         {
-          'title': isEn ? 'Face care' : 'Soins visage',
+          'title': _q('Soins visage', 'Face care', 'العناية بالوجه'),
           'icon': Icons.face,
           'value': 'soins_visage',
         },
         {
-          'title': isEn ? 'Hair care' : 'Cheveux',
+          'title': _q('Cheveux', 'Hair care', 'العناية بالشعر'),
           'icon': Icons.content_cut,
           'value': 'cheveux',
         },
         {
-          'title': isEn ? 'Body care' : 'Soins corps',
+          'title': _q('Soins corps', 'Body care', 'العناية بالجسم'),
           'icon': Icons.accessibility,
           'value': 'soins_corps',
         },
         {
-          'title': isEn ? 'Makeup' : 'Maquillage',
+          'title': _q('Maquillage', 'Makeup', 'المكياج'),
           'icon': Icons.auto_awesome,
           'value': 'maquillage',
         },
@@ -1297,12 +1426,21 @@ class _BeautyQuizPageState extends State<BeautyQuizPage> {
         // Au lieu de passer le 'title' (qui change selon la langue), on cherche la 'value' technique stable
         final selectedOption = [
           {
-            'title': isEn ? 'Face care' : 'Soins visage',
+            'title': _q('Soins visage', 'Face care', 'العناية بالوجه'),
             'value': 'soins_visage',
           },
-          {'title': isEn ? 'Hair care' : 'Cheveux', 'value': 'cheveux'},
-          {'title': isEn ? 'Body care' : 'Soins corps', 'value': 'soins_corps'},
-          {'title': isEn ? 'Makeup' : 'Maquillage', 'value': 'maquillage'},
+          {
+            'title': _q('Cheveux', 'Hair care', 'العناية بالشعر'),
+            'value': 'cheveux',
+          },
+          {
+            'title': _q('Soins corps', 'Body care', 'العناية بالجسم'),
+            'value': 'soins_corps',
+          },
+          {
+            'title': _q('Maquillage', 'Makeup', 'المكياج'),
+            'value': 'maquillage',
+          },
         ].firstWhere((element) => element['title'] == val);
 
         setState(() => selectedCategory = selectedOption['value']);
@@ -1313,104 +1451,13 @@ class _BeautyQuizPageState extends State<BeautyQuizPage> {
 
   String getTranslatedBadge(String? value, bool isEn) {
     if (value == null || value.isEmpty) return '';
-
-    // 🔎 D'abord, on nettoie et on cherche une traduction directe de TOUT le bloc
-    // (au cas où, et pour les objectifs simples)
-    final String cleanKey = value.toLowerCase().trim();
-
-    // --- Le Dictionnaire (Même que tout à l'heure, juste pour référence) ---
-    final Map<String, String> badgeTranslations = {
-      "hydratation": isEn ? "Hydration" : "Hydratation",
-      "réparation": isEn ? "Repair" : "Réparation",
-      "brillance": isEn ? "Shine" : "Brillance",
-      "anti-chute": isEn ? "Anti-hair loss" : "Anti-chute",
-      "volume": isEn ? "Volume" : "Volume",
-      "anti-imperfections": isEn ? "Anti-imperfections" : "Anti-imperfections",
-      "éclat": isEn ? "Radiance" : "Éclat",
-      "eclat": isEn ? "Radiance" : "Éclat",
-      "anti-âge": isEn ? "Anti-aging" : "Anti-âge",
-      "apaisant": isEn ? "Soothing" : "Apaisant",
-      "boutons": isEn ? "Pimple & Acne" : "Boutons & Acné",
-      "taches": isEn ? "Dark Spots & Marks" : "Taches & Cicatrices",
-      "entretenir": isEn ? "Maintain" : "Entretenir",
-      "maintenance": isEn ? "Maintenance" : "Maintenance",
-      "lisses": isEn ? "Straight" : "Lisses",
-      "ondulés": isEn ? "Wavy" : "Ondulés",
-      "bouclés": isEn ? "Curly" : "Bouclés",
-      "frisés": isEn ? "Coily" : "Frisés",
-      "crépus": isEn ? "Kinky" : "Crépus",
-      "secs": isEn ? "Dry" : "Secs",
-      "normaux": isEn ? "Normal" : "Normaux",
-      "gras": isEn ? "Oily" : "Gras",
-      "mixtes": isEn ? "Combination" : "Mixtes",
-      "lisse": isEn ? "Straight" : "Lisse",
-      "ondulé": isEn ? "Wavy" : "Ondulé",
-      "bouclé": isEn ? "Curly" : "Bouclé",
-      "frisé": isEn ? "Coily" : "Frisé",
-      "crépu": isEn ? "Kinky" : "Crépu",
-      "sec": isEn ? "Dry" : "Sec",
-      "normal": isEn ? "Normal" : "Normal",
-      "mixte": isEn ? "Combination" : "Mixte",
-      "sèche": isEn ? "Dry Skin" : "Sèche",
-      "seche": isEn ? "Dry Skin" : "Sèche",
-      "très sèche": isEn ? "Very Dry Skin" : "Très Sèche",
-      "tres seche": isEn ? "Very Dry Skin" : "Très Sèche",
-      "normale": isEn ? "Normal Skin" : "Normale",
-      "grasse": isEn ? "Oily Skin" : "Grasse",
-      "sensible": isEn ? "Sensitive Skin" : "Sensible",
-      // --- UNIVERS MAQUILLAGE (ZONES) ---
-      "teint": isEn ? "Complexion" : "Teint",
-      "yeux": isEn ? "Eyes" : "Yeux",
-      "lèvres": isEn ? "Lips" : "Lèvres",
-
-      // --- FINIS & FINITIONS ---
-      "lumineux": isEn ? "Radiant" : "Lumineux",
-      "mat": isEn ? "Matte" : "Mat",
-      "matte": isEn ? "Matte" : "Mat", // Sécurité doublon d'écriture
-      "glossy": isEn ? "Glossy" : "Brillant",
-
-      // --- COUVRANCES ---
-      "couvrance_moyenne": isEn ? "Medium Coverage" : "Couvrance Moyenne",
-      "haute_couvrance": isEn ? "Full Coverage" : "Haute Couvrance",
-
-      // --- EFFETS, STYLES & FORMULES ---
-      "naturel": isEn ? "Natural Look" : "Naturel",
-      "intense": isEn ? "Bold Look" : "Intense",
-      "waterproof": isEn ? "Waterproof" : "Waterproof",
-      "baume_tinté": isEn ? "Tinted Balm" : "Baume Teinté",
-    };
-
-    // 1️⃣ Tentative de traduction directe (si le mot est seul)
-    if (badgeTranslations.containsKey(cleanKey)) {
-      return badgeTranslations[cleanKey]!;
-    }
-
-    // 2️⃣ 🟢 LA MAGIE OPÈRE ICI POUR LE BINDAGE "&" 🟢
-    // Si on est ici, c'est que le mot complet n'est pas dans le dictionnaire.
-    // On regarde s'il y a un "&".
     if (value.contains('&')) {
-      // On sépare le texte en deux par le "&"
-      List<String> parts = value.split('&');
-
-      // On crée une liste pour stocker les morceaux traduits
-      List<String> translatedParts = [];
-
-      for (String part in parts) {
-        String cleanPart = part
-            .trim()
-            .toLowerCase(); // On nettoie chaque morceau
-
-        // On traduit le morceau s'il est dans le dictionnaire, sinon on garde l'original
-        String translatedPart = badgeTranslations[cleanPart] ?? part.trim();
-        translatedParts.add(translatedPart);
-      }
-
-      // On recolle les morceaux traduits avec " & "
-      return translatedParts.join(' & ');
+      return value
+          .split('&')
+          .map((part) => _badgeText(part.trim()))
+          .join(' & ');
     }
-
-    // 3️⃣ Si aucun "&" et pas de traduction trouvée, on rend la valeur brute
-    return value;
+    return _badgeText(value);
   }
 
   Widget _buildMemoryScreen({
@@ -1436,7 +1483,11 @@ class _BeautyQuizPageState extends State<BeautyQuizPage> {
 
           // Titre
           Text(
-            isEn ? "Welcome back, beautiful!" : "Heureuse de vous revoir !",
+            _q(
+              "Heureuse de vous revoir !",
+              "Welcome back, beautiful!",
+              "سعيدة بعودتك!",
+            ),
             textAlign: TextAlign.center,
             style: const TextStyle(
               fontSize: 26,
@@ -1458,9 +1509,11 @@ class _BeautyQuizPageState extends State<BeautyQuizPage> {
               ),
               children: [
                 TextSpan(
-                  text: isEn
-                      ? "We kept your "
-                      : "Nous avons gardé votre profil ",
+                  text: _q(
+                    "Nous avons gardé votre profil ",
+                    "We kept your ",
+                    "احتفظنا بملفك ",
+                  ),
                 ),
                 TextSpan(
                   // 🟢 ON APPLIQUE LA TRADUCTION ICI
@@ -1474,9 +1527,11 @@ class _BeautyQuizPageState extends State<BeautyQuizPage> {
                   ),
                 ),
                 TextSpan(
-                  text: isEn
-                      ? " profile ready for you."
-                      : " en mémoire pour vous.",
+                  text: _q(
+                    " en mémoire pour vous.",
+                    " profile ready for you.",
+                    " جاهزاً لك.",
+                  ),
                 ),
               ],
             ),
@@ -1498,9 +1553,11 @@ class _BeautyQuizPageState extends State<BeautyQuizPage> {
               ),
               onPressed: onContinue,
               child: Text(
-                isEn
-                    ? "CONTINUE WITH THIS PROFILE"
-                    : "CONTINUER AVEC CE PROFIL",
+                _q(
+                  "CONTINUER AVEC CE PROFIL",
+                  "CONTINUE WITH THIS PROFILE",
+                  "المتابعة بهذا الملف",
+                ),
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 15,
@@ -1515,7 +1572,11 @@ class _BeautyQuizPageState extends State<BeautyQuizPage> {
             onPressed: onChange,
             style: TextButton.styleFrom(foregroundColor: Colors.grey[600]),
             child: Text(
-              isEn ? "Change profile" : "Modifier mes informations",
+              _q(
+                "Modifier mes informations",
+                "Change profile",
+                "تعديل معلوماتي",
+              ),
               style: const TextStyle(
                 decoration: TextDecoration.underline,
                 fontWeight: FontWeight.w500,
@@ -1609,109 +1670,121 @@ class _BeautyQuizPageState extends State<BeautyQuizPage> {
 
     if (normCategory.contains("soins_visage") ||
         normCategory.contains("face")) {
-      title = isEn ? "Your skin type?" : "Ton type de peau ?";
+      title = _q("Ton type de peau ?", "Your skin type?", "ما نوع بشرتك؟");
       options = [
         {
-          'title': isEn ? 'Normal' : 'Normale',
+          'title': _q('Normale', 'Normal', 'عادية'),
           'tag': 'normale',
           'icon': Icons.check_circle_outline,
         },
         {
-          'title': isEn ? 'Dry' : 'Sèche',
+          'title': _q('Sèche', 'Dry', 'جافة'),
           'tag': 'sèche',
           'icon': Icons.water_drop_outlined,
         },
         {
-          'title': isEn ? 'Oily' : 'Grasse',
+          'title': _q('Grasse', 'Oily', 'دهنية'),
           'tag': 'grasse',
           'icon': Icons.opacity,
         },
         {
-          'title': isEn ? 'Combination' : 'Mixte',
+          'title': _q('Mixte', 'Combination', 'مختلطة'),
           'tag': 'mixte',
           'icon': Icons.waves,
         },
       ];
     } else if (normCategory.contains("cheveux") ||
         normCategory.contains("hair")) {
-      title = isEn ? "Your hair structure?" : "Structure de tes cheveux ?";
+      title = _q(
+        "Structure de tes cheveux ?",
+        "Your hair structure?",
+        "ما طبيعة شعرك؟",
+      );
       options = [
         {
-          'title': isEn ? 'Straight' : 'Lisses',
+          'title': _q('Lisses', 'Straight', 'أملس'),
           'tag': 'lisses',
           'icon': Icons.segment,
         },
         {
-          'title': isEn ? 'Wavy' : 'Ondulés',
+          'title': _q('Ondulés', 'Wavy', 'مموج'),
           'tag': 'ondulés',
           'icon': Icons.gesture,
         },
         {
-          'title': isEn ? 'Curly' : 'Bouclés',
+          'title': _q('Bouclés', 'Curly', 'كيرلي'),
           'tag': 'bouclés',
           'icon': Icons.all_inclusive,
         },
         {
-          'title': isEn ? 'Coily' : 'Frisés',
+          'title': _q('Frisés', 'Coily', 'مجعد'),
           'tag': 'frisés',
           'icon': Icons.texture,
         },
         {
-          'title': isEn ? 'Kinky' : 'Crépus',
+          'title': _q('Crépus', 'Kinky', 'أفرو'),
           'tag': 'crépus',
           'icon': Icons.grain,
         },
       ];
     } else if (normCategory.contains("soins_corps") ||
         normCategory.contains("body")) {
-      title = isEn ? "Your skin type?" : "Type de peau (Corps) ?";
+      title = _q(
+        "Type de peau (Corps) ?",
+        "Your skin type?",
+        "ما نوع بشرة جسمك؟",
+      );
       options = [
         {
-          'title': isEn ? 'Normal' : 'Normale',
+          'title': _q('Normale', 'Normal', 'عادية'),
           'tag': 'normale',
           'icon': Icons.check_circle_outline,
         },
         {
-          'title': isEn ? 'Dry' : 'Sèche',
+          'title': _q('Sèche', 'Dry', 'جافة'),
           'tag': 'sèche',
           'icon': Icons.water_drop_outlined,
         },
         {
-          'title': isEn ? 'Very Dry' : 'Très sèche',
+          'title': _q('Très sèche', 'Very Dry', 'جافة جداً'),
           'tag': 'très_sèche',
           'icon': Icons.warning_amber_rounded,
         },
       ];
     } else if (normCategory.contains("maquillage") ||
         normCategory.contains("makeup")) {
-      title = isEn ? "What are you looking for?" : "Que cherches-tu ?";
+      title = _q(
+        "Que cherches-tu ?",
+        "What are you looking for?",
+        "ماذا تبحثين عنه؟",
+      );
       options = [
         {
-          'title': isEn ? 'Complexion' : 'Teint',
+          'title': _q('Teint', 'Complexion', 'البشرة'),
           'tag': 'teint',
           'icon': Icons.face_retouching_natural,
         },
         {
-          'title': isEn ? 'Eyes' : 'Yeux',
+          'title': _q('Yeux', 'Eyes', 'العيون'),
           'tag': 'yeux',
           'icon': Icons.remove_red_eye_outlined,
         },
         {
-          'title': isEn ? 'Lips' : 'Lèvres',
+          'title': _q('Lèvres', 'Lips', 'الشفاه'),
           'tag': 'lèvres',
           'icon': Icons.auto_fix_high,
         },
       ];
     } else {
-      title = isEn ? "Your preference" : "Ta préférence";
+      title = _q("Ta préférence", "Your preference", "تفضيلك");
       options = [
         {
-          'title': isEn ? 'Normal' : 'Normale',
+          'title': _q('Normale', 'Normal', 'عادية'),
           'tag': 'normale',
           'icon': Icons.face,
         },
         {
-          'title': isEn ? 'Sensitive' : 'Sensible',
+          'title': _q('Sensible', 'Sensitive', 'حساسة'),
           'tag': 'sensible',
           'icon': Icons.auto_awesome_motion,
         },
@@ -1758,18 +1831,22 @@ class _BeautyQuizPageState extends State<BeautyQuizPage> {
   Widget _buildHairScalpStep() {
     final List<Map<String, dynamic>> statusOptions = [
       {
-        'title': isEn ? 'Dry' : 'Secs',
+        'title': _q('Secs', 'Dry', 'جافة'),
         'icon': Icons.warning_amber_outlined,
         'tag': 'secs',
       },
       {
-        'title': isEn ? 'Normal' : 'Normaux',
+        'title': _q('Normaux', 'Normal', 'عادية'),
         'icon': Icons.check_circle_outline,
         'tag': 'normaux',
       },
-      {'title': isEn ? 'Oily' : 'Gras', 'icon': Icons.opacity, 'tag': 'gras'},
       {
-        'title': isEn ? 'Combination' : 'Mixtes',
+        'title': _q('Gras', 'Oily', 'دهنية'),
+        'icon': Icons.opacity,
+        'tag': 'gras',
+      },
+      {
+        'title': _q('Mixtes', 'Combination', 'مختلطة'),
         'icon': Icons.contrast,
         'tag': 'mixtes',
       },
@@ -1781,7 +1858,11 @@ class _BeautyQuizPageState extends State<BeautyQuizPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            isEn ? "How is your scalp?" : "Comment est ton cuir chevelu ?",
+            _q(
+              "Comment est ton cuir chevelu ?",
+              "How is your scalp?",
+              "كيف هي فروة رأسك؟",
+            ),
             style: const TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
@@ -1875,7 +1956,7 @@ class _BeautyQuizPageState extends State<BeautyQuizPage> {
                     }
                   : null,
               child: Text(
-                isEn ? "CONTINUE" : "CONTINUER",
+                _q("CONTINUER", "CONTINUE", "متابعة"),
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
@@ -1896,7 +1977,11 @@ class _BeautyQuizPageState extends State<BeautyQuizPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            isEn ? "Your lengths & history:" : "Tes longueurs & antécédents :",
+            _q(
+              "Tes longueurs & antécédents :",
+              "Your lengths & history:",
+              "أطراف شعرك وتاريخه:",
+            ),
             style: const TextStyle(
               fontSize:
                   20, // Légèrement augmenté car c'est un titre de page principal maintenant
@@ -1909,7 +1994,7 @@ class _BeautyQuizPageState extends State<BeautyQuizPage> {
           // Checkbox Abîmés
           CheckboxListTile(
             title: Text(
-              isEn ? "Damaged / Brittle hair" : "Abîmés / Cassants",
+              _q("Abîmés / Cassants", "Damaged / Brittle hair", "تالف / يتكسر"),
               style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
             ),
             secondary: Icon(
@@ -1932,7 +2017,11 @@ class _BeautyQuizPageState extends State<BeautyQuizPage> {
           // Checkbox Colorés
           CheckboxListTile(
             title: Text(
-              isEn ? "Color-treated / Highlights" : "Colorés / Méchés",
+              _q(
+                "Colorés / Méchés",
+                "Color-treated / Highlights",
+                "مصبوغ / فيه هايلايت",
+              ),
               style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
             ),
             secondary: Icon(
@@ -1965,9 +2054,11 @@ class _BeautyQuizPageState extends State<BeautyQuizPage> {
               padding: const EdgeInsets.only(left: 12),
               child: SwitchListTile(
                 title: Text(
-                  isEn
-                      ? "Is it blonde / bleached?"
-                      : "S'agit-il d'un blond / décoloration ?",
+                  _q(
+                    "S'agit-il d'un blond / décoloration ?",
+                    "Is it blonde / bleached?",
+                    "هل هو أشقر أو مفتّح؟",
+                  ),
                   style: const TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
@@ -2002,9 +2093,11 @@ class _BeautyQuizPageState extends State<BeautyQuizPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    isEn
-                        ? "What type of routine do you want?"
-                        : "Quel type de routine préfères-tu ?",
+                    _q(
+                      "Quel type de routine préfères-tu ?",
+                      "What type of routine do you want?",
+                      "أي نوع روتين تفضلين؟",
+                    ),
                     style: const TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.bold,
@@ -2014,9 +2107,11 @@ class _BeautyQuizPageState extends State<BeautyQuizPage> {
                   const SizedBox(height: 8),
                   RadioListTile<String>(
                     title: Text(
-                      isEn
-                          ? "Anti-yellowing (Purple routine)"
-                          : "Déjaunissante (Soins Violets)",
+                      _q(
+                        "Déjaunissante (Soins Violets)",
+                        "Anti-yellowing (Purple routine)",
+                        "إزالة الاصفرار (روتين بنفسجي)",
+                      ),
                       style: const TextStyle(fontSize: 13),
                     ),
                     value: "violet",
@@ -2029,9 +2124,11 @@ class _BeautyQuizPageState extends State<BeautyQuizPage> {
                   ),
                   RadioListTile<String>(
                     title: Text(
-                      isEn
-                          ? "Regular nourishing care"
-                          : "Entretien régulier / Nourrissant",
+                      _q(
+                        "Entretien régulier / Nourrissant",
+                        "Regular nourishing care",
+                        "عناية عادية ومغذية",
+                      ),
                       style: const TextStyle(fontSize: 13),
                     ),
                     value: "regular",
@@ -2082,7 +2179,7 @@ class _BeautyQuizPageState extends State<BeautyQuizPage> {
                 }
               },
               child: Text(
-                isEn ? "CONTINUE" : "CONTINUER",
+                _q("CONTINUER", "CONTINUE", "متابعة"),
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
@@ -2097,7 +2194,11 @@ class _BeautyQuizPageState extends State<BeautyQuizPage> {
 
   // --- ÉTAPE 3 : OBJECTIF ---
   Widget _buildGoalStep() {
-    String title = isEn ? "What is your goal?" : "Quel est ton objectif ?";
+    String title = _q(
+      "Quel est ton objectif ?",
+      "What is your goal?",
+      "ما هدفك؟",
+    );
     List<Map<String, dynamic>> options = [];
 
     String normCategory = _normalizeTag(selectedCategory ?? "");
@@ -2107,27 +2208,27 @@ class _BeautyQuizPageState extends State<BeautyQuizPage> {
         normCategory.contains("face")) {
       options = [
         {
-          'title': isEn ? 'Hydration' : 'Hydratation',
+          'title': _q('Hydratation', 'Hydration', 'ترطيب'),
           'tag': 'hydratation',
           'icon': Icons.water,
         },
         {
-          'title': isEn ? 'Anti-imperfections' : 'Anti-imperfections',
+          'title': _q('Anti-imperfections', 'Anti-imperfections', 'ضد الشوائب'),
           'tag': 'anti-imperfections',
           'icon': Icons.cleaning_services,
         },
         {
-          'title': isEn ? 'Radiance' : 'Éclat',
+          'title': _q('Éclat', 'Radiance', 'إشراقة'),
           'tag': 'éclat',
           'icon': Icons.lightbulb_outline,
         },
         {
-          'title': isEn ? 'Anti-aging' : 'Anti-âge',
+          'title': _q('Anti-âge', 'Anti-aging', 'مضاد للتقدم في السن'),
           'tag': 'anti-âge',
           'icon': Icons.history,
         },
         {
-          'title': isEn ? 'Soothing' : 'Apaisant',
+          'title': _q('Apaisant', 'Soothing', 'تهدئة'),
           'tag': 'Apaisant',
           'icon': Icons.shield_outlined,
         },
@@ -2136,27 +2237,27 @@ class _BeautyQuizPageState extends State<BeautyQuizPage> {
         normCategory.contains("hair")) {
       options = [
         {
-          'title': isEn ? 'Hydration' : 'Hydratation',
+          'title': _q('Hydratation', 'Hydration', 'ترطيب'),
           'tag': 'hydratation',
           'icon': Icons.water_drop,
         },
         {
-          'title': isEn ? 'Repair' : 'Réparation',
+          'title': _q('Réparation', 'Repair', 'ترميم'),
           'tag': 'réparation',
           'icon': Icons.build,
         },
         {
-          'title': isEn ? 'Shine' : 'Brillance',
+          'title': _q('Brillance', 'Shine', 'لمعان'),
           'tag': 'brillance',
           'icon': Icons.star_border,
         },
         {
-          'title': isEn ? 'Anti-hair loss' : 'Anti-chute',
+          'title': _q('Anti-chute', 'Anti-hair loss', 'ضد التساقط'),
           'tag': 'anti-chute',
           'icon': Icons.do_not_disturb_on_total_silence,
         },
         {
-          'title': isEn ? 'Volume' : 'Volume',
+          'title': _q('Volume', 'Volume', 'حجم'),
           'tag': 'volume',
           'icon': Icons.waves,
         },
@@ -2165,17 +2266,29 @@ class _BeautyQuizPageState extends State<BeautyQuizPage> {
         normCategory.contains("body")) {
       options = [
         {
-          'title': isEn ? 'Hydrate & Soften' : 'Hydrater et adoucir ma peau',
+          'title': _q(
+            'Hydrater et adoucir ma peau',
+            'Hydrate & Soften',
+            'ترطيب وتنعيم بشرتي',
+          ),
           'tag': 'hydratation',
           'icon': Icons.spa_outlined,
         },
         {
-          'title': isEn ? 'Soothe tightness' : 'Apaiser les tiraillements',
+          'title': _q(
+            'Apaiser les tiraillements',
+            'Soothe tightness',
+            'تهدئة الشد',
+          ),
           'tag': 'apaisant',
           'icon': Icons.health_and_safety_outlined,
         },
         {
-          'title': isEn ? 'Daily maintenance' : 'Juste entretenir ma peau',
+          'title': _q(
+            'Juste entretenir ma peau',
+            'Daily maintenance',
+            'عناية يومية فقط',
+          ),
           'tag': 'entretenir',
           'icon': Icons.favorite_border_rounded,
         },
@@ -2183,64 +2296,88 @@ class _BeautyQuizPageState extends State<BeautyQuizPage> {
     } else if (normCategory.contains("maquillage") ||
         normCategory.contains("makeup")) {
       if (normProfile.contains("teint") || normProfile.contains("complexion")) {
-        title = isEn ? "Which finish?" : "Quel fini recherches-tu ?";
+        title = _q(
+          "Quel fini recherches-tu ?",
+          "Which finish?",
+          "أي لمسة نهائية تريدين؟",
+        );
         options = [
           {
-            'title': isEn ? 'Natural & Luminous' : 'Naturel & Lumineux',
+            'title': _q(
+              'Naturel & Lumineux',
+              'Natural & Luminous',
+              'طبيعي ومشرق',
+            ),
             'tag': 'lumineux',
             'icon': Icons.wb_sunny_outlined,
           },
           {
-            'title': isEn ? 'Medium Coverage' : 'Couvrance Moyenne',
+            'title': _q('Couvrance Moyenne', 'Medium Coverage', 'تغطية متوسطة'),
             'tag': 'couvrance_moyenne',
             'icon': Icons.filter_none_outlined,
           },
           {
-            'title': isEn ? 'High Coverage' : 'Haute Couvrance',
+            'title': _q('Haute Couvrance', 'High Coverage', 'تغطية عالية'),
             'tag': 'haute_couvrance',
             'icon': Icons.layers_outlined,
           },
           {
-            'title': isEn ? 'Matte / Shine-free' : 'Mat / Sans brillance',
+            'title': _q(
+              'Mat / Sans brillance',
+              'Matte / Shine-free',
+              'مطفي بدون لمعان',
+            ),
             'tag': 'mat',
             'icon': Icons.vignette_outlined,
           },
         ];
       } else if (normProfile.contains("yeux") || normProfile.contains("eyes")) {
-        title = isEn ? "Which effect?" : "Quel effet souhaites-tu ?";
+        title = _q(
+          "Quel effet souhaites-tu ?",
+          "Which effect?",
+          "أي تأثير تريدين؟",
+        );
         options = [
           {
-            'title': isEn ? 'Intense' : 'Intense',
+            'title': _q('Intense', 'Intense', 'قوي'),
             'tag': 'intense',
             'icon': Icons.remove_red_eye,
           },
           {
-            'title': isEn ? 'Natural' : 'Naturel',
+            'title': _q('Naturel', 'Natural', 'طبيعي'),
             'tag': 'naturel',
             'icon': Icons.visibility_outlined,
           },
           {
-            'title': isEn ? 'Waterproof' : 'Waterproof',
+            'title': _q('Waterproof', 'Waterproof', 'مقاوم للماء'),
             'tag': 'waterproof',
             'icon': Icons.water_drop_outlined,
           },
         ];
       } else if (normProfile.contains("lèvres") ||
           normProfile.contains("lips")) {
-        title = isEn ? "Which texture?" : "Quelle texture préfères-tu ?";
+        title = _q(
+          "Quelle texture préfères-tu ?",
+          "Which texture?",
+          "أي قوام تفضلين؟",
+        );
         options = [
           {
-            'title': isEn ? 'Glossy' : 'Brillant / Glossy',
+            'title': _q('Brillant / Glossy', 'Glossy', 'لامع / غلوسي'),
             'tag': 'glossy',
             'icon': Icons.auto_awesome,
           },
           {
-            'title': isEn ? 'Matte' : 'Mat / Sans transfert',
+            'title': _q('Mat / Sans transfert', 'Matte', 'مطفي بدون انتقال'),
             'tag': 'mat',
             'icon': Icons.format_color_fill,
           },
           {
-            'title': isEn ? 'Tinted balm' : 'Baume teinté hydratant',
+            'title': _q(
+              'Baume teinté hydratant',
+              'Tinted balm',
+              'بلسم ملون مرطب',
+            ),
             'tag': 'baume_teinte',
             'icon': Icons.spa_outlined,
           },
@@ -2348,21 +2485,23 @@ class _BeautyQuizPageState extends State<BeautyQuizPage> {
     // Ajout d'une clé 'tag' technique stable pour éviter les soucis de traduction
     final List<Map<String, dynamic>> imperfectionOptions = [
       {
-        'title': isEn ? 'Pimple & Acne' : 'Boutons & Acné',
+        'title': _q('Boutons & Acné', 'Pimple & Acne', 'حبوب وحب الشباب'),
         'tag': 'boutons',
         'icon': Icons.gpp_bad_outlined,
       },
       {
-        'title': isEn ? 'Dark Spots & Marks' : 'Taches & Cicatrices',
+        'title': _q('Taches & Cicatrices', 'Dark Spots & Marks', 'بقع وآثار'),
         'tag': 'taches',
         'icon': Icons.blur_on,
       },
     ];
 
     return _buildSelectionGrid(
-      title: isEn
-          ? "What do you want to target primarily?"
-          : "Que veux-tu cibler en priorité ?",
+      title: _q(
+        "Que veux-tu cibler en priorité ?",
+        "What do you want to target primarily?",
+        "ما الذي تريدين استهدافه أولاً؟",
+      ),
       options: imperfectionOptions,
       onSelect: (val) {
         // 🌟 Récupération propre via le dictionnaire technique
@@ -2388,54 +2527,148 @@ class _BeautyQuizPageState extends State<BeautyQuizPage> {
     if (categoryLower.contains("soins_visage") ||
         categoryLower.contains("face")) {
       if (typeLower.contains("nettoyant")) {
-        return {"num": "1", "action": isEn ? "CLEANSE" : "1. NETTOYER"};
+        return {"num": "1", "action": _q("1. NETTOYER", "CLEANSE", "1. تنظيف")};
       }
       if (typeLower.contains("sérum") || typeLower.contains("serum")) {
         return {
           "num": "2",
-          "action": isEn ? "TREAT (STAR ✨)" : "2. TRAITER (STAR ✨)",
+          "action": _q(
+            "2. TRAITER (STAR ✨)",
+            "TREAT (STAR ✨)",
+            "2. علاج (الأهم ✨)",
+          ),
         };
       }
       if (typeLower.contains("crème") || typeLower.contains("creme")) {
-        return {"num": "3", "action": isEn ? "HYDRATE" : "3. HYDRATER"};
+        return {"num": "3", "action": _q("3. HYDRATER", "HYDRATE", "3. ترطيب")};
       }
     }
 
     // --- UNIVERS CHEVEUX ---
     if (categoryLower.contains("cheveux") || categoryLower.contains("hair")) {
       if (typeLower.contains("shampooing")) {
-        return {"num": "1", "action": isEn ? "WASH" : "1. LAVER"};
+        return {"num": "1", "action": _q("1. LAVER", "WASH", "1. غسل")};
       }
       if (typeLower.contains("masque") ||
           typeLower.contains("après-shampooing")) {
         return {
           "num": "2",
-          "action": isEn ? "DEEP CARE (STAR ✨)" : "2. SOIGNER (STAR ✨)",
+          "action": _q(
+            "2. SOIGNER (STAR ✨)",
+            "DEEP CARE (STAR ✨)",
+            "2. عناية عميقة (الأهم ✨)",
+          ),
         };
       }
       if (typeLower.contains("sérum/huile") ||
           typeLower.contains("huile") ||
           typeLower.contains("serum")) {
-        return {"num": "3", "action": isEn ? "PROTECT" : "3. SUBLIMER"};
+        return {
+          "num": "3",
+          "action": _q("3. SUBLIMER", "PROTECT", "3. حماية ولمعان"),
+        };
       }
     }
 
     // --- MAQUILLAGE / CORPS TRADUCTION DES TYPES PAR DÉFAUT ---
-    String actionLabel = type.toUpperCase();
-    if (isEn) {
-      final Map<String, String> typeTranslations = {
-        "fond de teint": "FOUNDATION",
-        "base": "PRIMER",
-        "anti-cerne": "CONCEALER",
-        "mascara": "MASCARA",
-        "eyeliner": "EYELINER",
-        "soucils": "EYEBROWS",
-        "rouge à lèvres": "LIPSTICK",
-        "baume": "LIP BALM",
-        "gel douche": "BODY WASH",
-        "gommage": "BODY SCRUB",
-        "lait corporel": "BODY LOTION",
-      };
+    const Map<String, String> typeLabelsFr = {
+      "encres à lèvres": "Encre à lèvres",
+      "encres a levres": "Encre à lèvres",
+    };
+
+    String actionLabel = (typeLabelsFr[typeLower] ?? type).toUpperCase();
+    if (isEn || isAr) {
+      final Map<String, String> typeTranslations = isAr
+          ? {
+              "fond de teint": "فاونديشن",
+              "base": "برايمر",
+              "primer": "برايمر",
+              "anti-cerne": "كونسيلر",
+              "anti-cernes": "كونسيلر",
+              "poudre": "بودرة",
+              "blush": "بلاشر",
+              "highlighter": "هايلايتر",
+              "highligher": "هايلايتر",
+              "mascara": "ماسكارا",
+              "eyeliner": "آيلاينر",
+              "sourcils": "الحواجب",
+              "soucils": "الحواجب",
+              "palettes": "باليت",
+              "palette": "باليت",
+              "crayon à lèvres": "قلم شفاه",
+              "crayon a levres": "قلم شفاه",
+              "rouge à lèvres": "أحمر شفاه",
+              "rouge a levres": "أحمر شفاه",
+              "gloss": "غلوس",
+              "baume": "بلسم شفاه",
+              "encre à lèvres": "تينت شفاه",
+              "encre a levres": "تينت شفاه",
+              "encres à lèvres": "تينت شفاه",
+              "encres a levres": "تينت شفاه",
+              "contour/bronzer": "كونتور/برونزر",
+              "contour": "كونتور",
+              "bronzer": "برونزر",
+              "gel douche": "جل استحمام",
+              "gommage": "مقشر جسم",
+              "lait corporel": "لوشن جسم",
+              "crème corps": "كريم جسم",
+              "creme corps": "كريم جسم",
+              "lotion": "لوشن",
+              "déodorant": "مزيل عرق",
+              "deodorant": "مزيل عرق",
+              "shampooing": "شامبو",
+              "masque": "ماسك",
+              "après-shampooing": "بلسم",
+              "apres-shampooing": "بلسم",
+              "sérum/huile": "سيروم/زيت",
+              "serum/huile": "سيروم/زيت",
+              "huile": "زيت",
+            }
+          : {
+              "fond de teint": "FOUNDATION",
+              "base": "PRIMER",
+              "primer": "PRIMER",
+              "anti-cerne": "CONCEALER",
+              "anti-cernes": "CONCEALER",
+              "poudre": "POWDER",
+              "blush": "BLUSH",
+              "highlighter": "HIGHLIGHTER",
+              "highligher": "HIGHLIGHTER",
+              "mascara": "MASCARA",
+              "eyeliner": "EYELINER",
+              "sourcils": "EYEBROWS",
+              "soucils": "EYEBROWS",
+              "palettes": "PALETTES",
+              "palette": "PALETTE",
+              "crayon à lèvres": "LIP LINER",
+              "crayon a levres": "LIP LINER",
+              "rouge à lèvres": "LIPSTICK",
+              "rouge a levres": "LIPSTICK",
+              "gloss": "GLOSS",
+              "baume": "LIP BALM",
+              "encre à lèvres": "LIP TINT",
+              "encre a levres": "LIP TINT",
+              "encres à lèvres": "LIP TINT",
+              "encres a levres": "LIP TINT",
+              "contour/bronzer": "CONTOUR/BRONZER",
+              "contour": "CONTOUR",
+              "bronzer": "BRONZER",
+              "gel douche": "BODY WASH",
+              "gommage": "BODY SCRUB",
+              "lait corporel": "BODY LOTION",
+              "crème corps": "BODY CREAM",
+              "creme corps": "BODY CREAM",
+              "lotion": "LOTION",
+              "déodorant": "DEODORANT",
+              "deodorant": "DEODORANT",
+              "shampooing": "SHAMPOO",
+              "masque": "MASK",
+              "après-shampooing": "CONDITIONER",
+              "apres-shampooing": "CONDITIONER",
+              "sérum/huile": "SERUM/OIL",
+              "serum/huile": "SERUM/OIL",
+              "huile": "OIL",
+            };
       actionLabel = typeTranslations[typeLower] ?? type.toUpperCase();
     }
 
@@ -2469,7 +2702,11 @@ class _BeautyQuizPageState extends State<BeautyQuizPage> {
               ),
               const SizedBox(height: 16),
               Text(
-                isEn ? "No routine detected" : "Aucune routine détectée",
+                _q(
+                  "Aucune routine détectée",
+                  "No routine detected",
+                  "لم يتم العثور على روتين",
+                ),
                 style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -2477,9 +2714,11 @@ class _BeautyQuizPageState extends State<BeautyQuizPage> {
               ),
               const SizedBox(height: 8),
               Text(
-                isEn
-                    ? "We couldn't find products matching your criteria. Try changing your answers."
-                    : "Nous n'avons pas trouvé de produits correspondants exactement à tes critères. Essaie de modifier tes réponses.",
+                _q(
+                  "Nous n'avons pas trouvé de produits correspondants exactement à tes critères. Essaie de modifier tes réponses.",
+                  "We couldn't find products matching your criteria. Try changing your answers.",
+                  "لم نجد منتجات تطابق اختياراتك تماماً. جرّبي تعديل إجاباتك.",
+                ),
                 textAlign: TextAlign.center,
                 style: TextStyle(color: Colors.grey[600]),
               ),
@@ -2496,7 +2735,7 @@ class _BeautyQuizPageState extends State<BeautyQuizPage> {
                   _jumpToStep(0); // Retour à la première étape du quiz
                 },
                 child: Text(
-                  isEn ? "Retry" : "Recommencer",
+                  _q("Recommencer", "Retry", "إعادة المحاولة"),
                   style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
@@ -2513,71 +2752,11 @@ class _BeautyQuizPageState extends State<BeautyQuizPage> {
     // ==========================================
     final String catLower = _normalizeTag(selectedCategory ?? "");
 
-    // Dictionnaire de traduction inverse pour afficher de jolis Badges UI bilingues
-    // Dictionnaire de traduction inverse pour afficher de jolis Badges UI bilingues
-    final Map<String, String> badgeTranslations = {
-      // --- Objectifs & Besoins ---
-      "hydratation": isEn ? "Hydration" : "Hydratation",
-      "réparation": isEn ? "Repair" : "Réparation",
-      "brillance": isEn ? "Shine" : "Brillance",
-      "anti-chute": isEn ? "Anti-hair loss" : "Anti-chute",
-      "volume": isEn ? "Volume" : "Volume",
-      "anti-imperfections": isEn ? "Anti-imperfections" : "Anti-imperfections",
-      "éclat": isEn ? "Radiance" : "Éclat",
-      "eclat": isEn ? "Radiance" : "Éclat",
-      "anti-âge": isEn ? "Anti-aging" : "Anti-âge",
-      "apaisant": isEn ? "Soothing" : "Apaisant",
-      "boutons": isEn ? "Pimple & Acne" : "Boutons & Acné",
-      "taches": isEn ? "Dark Spots & Marks" : "Taches & Cicatrices",
-
-      // --- Profil Cheveux (Pluriel) ---
-      "lisses": isEn ? "Straight" : "Lisses",
-      "ondulés": isEn ? "Wavy" : "Ondulés",
-      "bouclés": isEn ? "Curly" : "Bouclés",
-      "frisés": isEn ? "Coily" : "Frisés",
-      "crépus": isEn ? "Kinky" : "Crépus",
-      "secs": isEn ? "Dry" : "Secs",
-      "normaux": isEn ? "Normal" : "Normaux",
-      "gras": isEn ? "Oily" : "Gras",
-      "mixtes": isEn ? "Combination" : "Mixtes",
-
-      // --- 🟢 AJOUT : Profil Peau (Singulier & Sécurisé) ---
-      "sèche": isEn ? "Dry Skin" : "Sèche",
-      "seche": isEn ? "Dry Skin" : "Sèche",
-      "très_sèche": isEn ? "Very Dry Skin" : "Très Sèche",
-      "tres_seche": isEn ? "Very Dry Skin" : "Très Sèche",
-      "normale": isEn ? "Normal Skin" : "Normale",
-      "grasse": isEn ? "Oily Skin" : "Grasse",
-      "mixte": isEn ? "Combination Skin" : "Mixte",
-      "sensible": isEn ? "Sensitive Skin" : "Sensible",
-      "entretenir": isEn ? "Maintain" : "Entretenir",
-      // --- UNIVERS MAQUILLAGE (ZONES) ---
-      "teint": isEn ? "Complexion" : "Teint",
-      "yeux": isEn ? "Eyes" : "Yeux",
-      "lèvres": isEn ? "Lips" : "Lèvres",
-      "levres": isEn ? "Lips" : "Lèvres", // Sécurité sans accent
-      // --- FINIS & FINITIONS ---
-      "lumineux": isEn ? "Radiant" : "Lumineux",
-      "mat": isEn ? "Matte" : "Mat",
-      "matte": isEn ? "Matte" : "Mat",
-      "glossy": isEn ? "Glossy" : "Brillant",
-
-      // --- COUVRANCES ---
-      "couvrance_moyenne": isEn ? "Medium Coverage" : "Couvrance Moyenne",
-      "haute_couvrance": isEn ? "Full Coverage" : "Haute Couvrance",
-
-      // --- EFFETS, STYLES & FORMULES ---
-      "naturel": isEn ? "Natural Look" : "Naturel",
-      "intense": isEn ? "Bold Look" : "Intense",
-      "waterproof": isEn ? "Waterproof" : "Waterproof",
-      "baume_tinté": isEn ? "Tinted Balm" : "Baume Teinté",
-      "baume_teinte": isEn ? "Tinted Balm" : "Baume Teinté",
-    };
-
     String getTranslatedBadge(String? technicalTag) {
-      if (technicalTag == null || technicalTag.isEmpty) return "Profil";
-      return badgeTranslations[technicalTag.toLowerCase().trim()] ??
-          technicalTag;
+      if (technicalTag == null || technicalTag.isEmpty) {
+        return _q("Profil", "Profile", "الملف");
+      }
+      return _badgeText(technicalTag);
     }
 
     return Stack(
@@ -2593,7 +2772,11 @@ class _BeautyQuizPageState extends State<BeautyQuizPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    isEn ? "Your Custom Routine" : "Ta Routine Sur-Mesure",
+                    _q(
+                      "Ta Routine Sur-Mesure",
+                      "Your Custom Routine",
+                      "روتينك المخصص",
+                    ),
                     style: const TextStyle(
                       fontSize: 26,
                       fontWeight: FontWeight.bold,
@@ -2641,7 +2824,9 @@ class _BeautyQuizPageState extends State<BeautyQuizPage> {
                   );
                   bool isStar = ed['num'] == "2";
 
-                  final String displayTitle = isEn
+                  final String displayTitle = isAr
+                      ? (data['title_ar'] ?? data['title'] ?? '')
+                      : isEn
                       ? (data['title_en'] ?? data['title'] ?? '')
                       : (data['title'] ?? '');
 
@@ -2735,7 +2920,13 @@ class _BeautyQuizPageState extends State<BeautyQuizPage> {
                                           ),
                                           const SizedBox(height: 6),
                                           Text(
-                                            "${data['price']} DA",
+                                            AppText.formatPrice(
+                                              Provider.of<LanguageProvider>(
+                                                context,
+                                                listen: false,
+                                              ).languageCode,
+                                              data['price'],
+                                            ),
                                             style: const TextStyle(
                                               fontWeight: FontWeight.w900,
                                               fontSize: 16,
@@ -2761,7 +2952,11 @@ class _BeautyQuizPageState extends State<BeautyQuizPage> {
                                                   ),
                                                   const SizedBox(width: 4),
                                                   Text(
-                                                    "Sans sulfates 🌿",
+                                                    _q(
+                                                      "Sans sulfates 🌿",
+                                                      "Sulfate-free 🌿",
+                                                      "بدون سلفات 🌿",
+                                                    ),
                                                     style: TextStyle(
                                                       color: Colors.green[700],
                                                       fontSize: 10,
@@ -2791,7 +2986,11 @@ class _BeautyQuizPageState extends State<BeautyQuizPage> {
                                                     ),
                                                     const SizedBox(width: 4),
                                                     Text(
-                                                      "Option Sans-Sulfates ⟳",
+                                                      _q(
+                                                        "Option Sans-Sulfates ⟳",
+                                                        "Sulfate-free option ⟳",
+                                                        "خيار بدون سلفات ⟳",
+                                                      ),
                                                       style: TextStyle(
                                                         color: Colors.pink[400],
                                                         fontSize: 10,
@@ -2960,8 +3159,12 @@ class _BeautyQuizPageState extends State<BeautyQuizPage> {
           // Si vraiment aucun produit sans sulfates n'existe dans ton catalogue pour cette catégorie
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: const Text(
-                "Désolé, aucun shampooing sans sulfates correspondant à vos critères n'est disponible pour le moment. 🌿",
+              content: Text(
+                _q(
+                  "Désolé, aucun shampooing sans sulfates correspondant à vos critères n'est disponible pour le moment. 🌿",
+                  "Sorry, no sulfate-free shampoo matching your criteria is available right now. 🌿",
+                  "عذراً، لا يوجد حالياً شامبو بدون سلفات يطابق معاييرك. 🌿",
+                ),
                 style: TextStyle(fontWeight: FontWeight.w600),
               ),
               backgroundColor: Colors.pink[400],
@@ -3069,7 +3272,7 @@ class _BeautyQuizPageState extends State<BeautyQuizPage> {
       context,
       listen: false,
     );
-    final bool isEn = languageProvider.selectedLanguage == "Anglais";
+    final bool isEn = languageProvider.languageCode == "en";
 
     final user = FirebaseAuth.instance.currentUser;
 
@@ -3079,6 +3282,8 @@ class _BeautyQuizPageState extends State<BeautyQuizPage> {
           content: Text(
             isEn
                 ? "Connect to add to cart"
+                : isAr
+                ? "سجّلي الدخول لإضافة المنتج إلى السلة"
                 : "Connectez-vous pour ajouter au panier",
           ),
           backgroundColor: Colors.redAccent,
@@ -3089,7 +3294,9 @@ class _BeautyQuizPageState extends State<BeautyQuizPage> {
     }
 
     // On prépare les données (pas de flavor ici car c'est une recommandation auto)
-    final String finalTitle = isEn
+    final String finalTitle = isAr
+        ? (data['title_ar'] ?? data['title'])
+        : isEn
         ? (data['title_en'] ?? data['title'])
         : data['title'];
     final String cartItemId = data['id']; // Simple ID car pas de variante
@@ -3113,7 +3320,11 @@ class _BeautyQuizPageState extends State<BeautyQuizPage> {
             children: [
               Expanded(
                 child: Text(
-                  "$finalTitle ${isEn ? 'added' : 'ajouté'}",
+                  "$finalTitle ${isAr
+                      ? 'تمت إضافته'
+                      : isEn
+                      ? 'added'
+                      : 'ajouté'}",
                   style: const TextStyle(color: Colors.black),
                 ),
               ),
@@ -3156,6 +3367,7 @@ class _BeautyQuizPageState extends State<BeautyQuizPage> {
           'productId': data['id'],
           'title': data['title'],
           'title_en': data['title_en'] ?? data['title'],
+          'title_ar': data['title_ar'] ?? data['title'],
           'brand': data['brand'] ?? '',
           'price': double.tryParse(data['price'].toString()) ?? 0.0,
           'costPrice':

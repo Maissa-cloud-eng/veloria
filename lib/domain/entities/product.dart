@@ -129,7 +129,7 @@ class Product {
       id: map['id']?.toString() ?? '',
       title: map['title']?.toString() ?? '',
       titleEn: map['title_en']?.toString() ?? map['title']?.toString() ?? '',
-      titleAr: map['title_ar']?.toString() ?? map['title']?.toString() ?? '',
+      titleAr: map['title_ar']?.toString() ?? '',
       brand: map['brand']?.toString(),
       price: map['price']?.toString() ?? '',
       costPrice: (map['costPrice'] is num)
@@ -152,20 +152,15 @@ class Product {
           map['description_en']?.toString() ??
           map['description']?.toString() ??
           '',
-      descriptionAr:
-          map['description_ar']?.toString() ??
-          map['description']?.toString() ??
-          '',
+      descriptionAr: map['description_ar']?.toString() ?? '',
       usageTips: map['usageTips']?.toString(),
       usageTipsEn:
           map['usageTips_en']?.toString() ?? map['usageTips']?.toString(),
-      usageTipsAr:
-          map['usageTips_ar']?.toString() ?? map['usageTips']?.toString(),
+      usageTipsAr: map['usageTips_ar']?.toString(),
       customBadge: map['customBadge']?.toString(),
       customBadgeEn:
           map['customBadge_en']?.toString() ?? map['customBadge']?.toString(),
-      customBadgeAr:
-          map['customBadge_ar']?.toString() ?? map['customBadge']?.toString(),
+      customBadgeAr: map['customBadge_ar']?.toString(),
       contents: map['contents']?.toString(),
       unit: map['unit']?.toString(),
       composition: map['composition']?.toString(),

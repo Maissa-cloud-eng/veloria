@@ -11,6 +11,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:veloria/main.dart';
+import 'package:veloria/core/i18n/app_text.dart';
 import 'package:veloria/presentation/controllers/cart_controllers.dart';
 import 'package:veloria/presentation/pages/public/type_quiz.dart';
 import 'package:veloria/presentation/states/language_provider.dart';
@@ -19,106 +20,142 @@ import 'package:crypto/crypto.dart';
 import 'dart:math';
 
 const List<Map<String, String>> wilayasAlgerie = [
-  {'id': 'adrar', 'name': '01 - Adrar'},
-  {'id': 'chlef', 'name': '02 - Chlef'},
-  {'id': 'laghouat', 'name': '03 - Laghouat'},
-  {'id': 'oum el bouaghi', 'name': '04 - Oum El Bouaghi'},
-  {'id': 'batna', 'name': '05 - Batna'},
-  {'id': 'bejaia', 'name': '06 - Béjaïa'},
-  {'id': 'biskra', 'name': '07 - Biskra'},
-  {'id': 'bechar', 'name': '08 - Béchar'},
-  {'id': 'blida', 'name': '09 - Blida'},
-  {'id': 'bouira', 'name': '10 - Bouira'},
-  {'id': 'tamanrasset', 'name': '11 - Tamanrasset'},
-  {'id': 'tebessa', 'name': '12 - Tébessa'},
-  {'id': 'tlemcen', 'name': '13 - Tlemcen'},
-  {'id': 'tiaret', 'name': '14 - Tiaret'},
-  {'id': 'tizi ouzou', 'name': '15 - Tizi Ouzou'},
-  {'id': 'alger', 'name': '16 - Alger'},
-  {'id': 'djelfa', 'name': '17 - Djelfa'},
-  {'id': 'jijel', 'name': '18 - Jijel'},
-  {'id': 'setif', 'name': '19 - Sétif'},
-  {'id': 'saida', 'name': '20 - Saïda'},
-  {'id': 'skikda', 'name': '21 - Skikda'},
-  {'id': 'sidi bel abbes', 'name': '22 - Sidi Bel Abbès'},
-  {'id': 'annaba', 'name': '23 - Annaba'},
-  {'id': 'guelma', 'name': '24 - Guelma'},
-  {'id': 'constantine', 'name': '25 - Constantine'},
-  {'id': 'medea', 'name': '26 - Médéa'},
-  {'id': 'mostaganem', 'name': '27 - Mostaganem'},
-  {'id': 'msila', 'name': '28 - M\'Sila'},
-  {'id': 'mascara', 'name': '29 - Mascara'},
-  {'id': 'ouargla', 'name': '30 - Ouargla'},
-  {'id': 'oran', 'name': '31 - Oran'},
-  {'id': 'el bayadh', 'name': '32 - El Bayadh'},
-  {'id': 'illizi', 'name': '33 - Illizi'},
-  {'id': 'bordj bou arreridj', 'name': '34 - Bordj Bou Arreridj'},
-  {'id': 'boumerdes', 'name': '35 - Boumerdès'},
-  {'id': 'el tarf', 'name': '36 - El Tarf'},
-  {'id': 'tindouf', 'name': '37 - Tindouf'},
-  {'id': 'tissemsilt', 'name': '38 - Tissemsilt'},
-  {'id': 'el oued', 'name': '39 - El Oued'},
-  {'id': 'khenchela', 'name': '40 - Khenchela'},
-  {'id': 'souk ahras', 'name': '41 - Souk Ahras'},
-  {'id': 'tipaza', 'name': '42 - Tipaza'},
-  {'id': 'mila', 'name': '43 - Mila'},
-  {'id': 'ain defla', 'name': '44 - Aïn Defla'},
-  {'id': 'naama', 'name': '45 - Naâma'},
-  {'id': 'ain temouchent', 'name': '46 - Aïn Témouchent'},
-  {'id': 'ghardaia', 'name': '47 - Ghardaïa'},
-  {'id': 'relizane', 'name': '48 - Relizane'},
-  {'id': 'timimoun', 'name': '49 - Timimoun'},
-  {'id': 'bordj badji mokhtar', 'name': '50 - Bordj Badji Mokhtar'},
-  {'id': 'ouled djellal', 'name': '51 - Ouled Djellal'},
-  {'id': 'beni abbes', 'name': '52 - Béni Abbès'},
-  {'id': 'in salah', 'name': '53 - In Salah'},
-  {'id': 'in guezzam', 'name': '54 - In Guezzam'},
-  {'id': 'touggourt', 'name': '55 - Touggourt'},
-  {'id': 'djanet', 'name': '56 - Djanet'},
-  {'id': 'el m\'ghair', 'name': '57 - El M\'Ghair'},
-  {'id': 'el meniaa', 'name': '58 - El Meniaâ'},
+  {'id': 'adrar', 'name': '01 - Adrar', 'name_ar': 'أدرار - 01'},
+  {'id': 'chlef', 'name': '02 - Chlef', 'name_ar': 'الشلف - 02'},
+  {'id': 'laghouat', 'name': '03 - Laghouat', 'name_ar': 'الأغواط - 03'},
+  {
+    'id': 'oum el bouaghi',
+    'name': '04 - Oum El Bouaghi',
+    'name_ar': 'أم البواقي - 04',
+  },
+  {'id': 'batna', 'name': '05 - Batna', 'name_ar': 'باتنة - 05'},
+  {'id': 'bejaia', 'name': '06 - Béjaïa', 'name_ar': 'بجاية - 06'},
+  {'id': 'biskra', 'name': '07 - Biskra', 'name_ar': 'بسكرة - 07'},
+  {'id': 'bechar', 'name': '08 - Béchar', 'name_ar': 'بشار - 08'},
+  {'id': 'blida', 'name': '09 - Blida', 'name_ar': 'البليدة - 09'},
+  {'id': 'bouira', 'name': '10 - Bouira', 'name_ar': 'البويرة - 10'},
+  {'id': 'tamanrasset', 'name': '11 - Tamanrasset', 'name_ar': 'تمنراست - 11'},
+  {'id': 'tebessa', 'name': '12 - Tébessa', 'name_ar': 'تبسة - 12'},
+  {'id': 'tlemcen', 'name': '13 - Tlemcen', 'name_ar': 'تلمسان - 13'},
+  {'id': 'tiaret', 'name': '14 - Tiaret', 'name_ar': 'تيارت - 14'},
+  {'id': 'tizi ouzou', 'name': '15 - Tizi Ouzou', 'name_ar': 'تيزي وزو - 15'},
+  {'id': 'alger', 'name': '16 - Alger', 'name_ar': 'الجزائر - 16'},
+  {'id': 'djelfa', 'name': '17 - Djelfa', 'name_ar': 'الجلفة - 17'},
+  {'id': 'jijel', 'name': '18 - Jijel', 'name_ar': 'جيجل - 18'},
+  {'id': 'setif', 'name': '19 - Sétif', 'name_ar': 'سطيف - 19'},
+  {'id': 'saida', 'name': '20 - Saïda', 'name_ar': 'سعيدة - 20'},
+  {'id': 'skikda', 'name': '21 - Skikda', 'name_ar': 'سكيكدة - 21'},
+  {
+    'id': 'sidi bel abbes',
+    'name': '22 - Sidi Bel Abbès',
+    'name_ar': 'سيدي بلعباس - 22',
+  },
+  {'id': 'annaba', 'name': '23 - Annaba', 'name_ar': 'عنابة - 23'},
+  {'id': 'guelma', 'name': '24 - Guelma', 'name_ar': 'قالمة - 24'},
+  {'id': 'constantine', 'name': '25 - Constantine', 'name_ar': 'قسنطينة - 25'},
+  {'id': 'medea', 'name': '26 - Médéa', 'name_ar': 'المدية - 26'},
+  {'id': 'mostaganem', 'name': '27 - Mostaganem', 'name_ar': 'مستغانم - 27'},
+  {'id': 'msila', 'name': '28 - M\'Sila', 'name_ar': 'المسيلة - 28'},
+  {'id': 'mascara', 'name': '29 - Mascara', 'name_ar': 'معسكر - 29'},
+  {'id': 'ouargla', 'name': '30 - Ouargla', 'name_ar': 'ورقلة - 30'},
+  {'id': 'oran', 'name': '31 - Oran', 'name_ar': 'وهران - 31'},
+  {'id': 'el bayadh', 'name': '32 - El Bayadh', 'name_ar': 'البيض - 32'},
+  {'id': 'illizi', 'name': '33 - Illizi', 'name_ar': 'إليزي - 33'},
+  {
+    'id': 'bordj bou arreridj',
+    'name': '34 - Bordj Bou Arreridj',
+    'name_ar': 'برج بوعريريج - 34',
+  },
+  {'id': 'boumerdes', 'name': '35 - Boumerdès', 'name_ar': 'بومرداس - 35'},
+  {'id': 'el tarf', 'name': '36 - El Tarf', 'name_ar': 'الطارف - 36'},
+  {'id': 'tindouf', 'name': '37 - Tindouf', 'name_ar': 'تندوف - 37'},
+  {'id': 'tissemsilt', 'name': '38 - Tissemsilt', 'name_ar': 'تيسمسيلت - 38'},
+  {'id': 'el oued', 'name': '39 - El Oued', 'name_ar': 'الوادي - 39'},
+  {'id': 'khenchela', 'name': '40 - Khenchela', 'name_ar': 'خنشلة - 40'},
+  {'id': 'souk ahras', 'name': '41 - Souk Ahras', 'name_ar': 'سوق أهراس - 41'},
+  {'id': 'tipaza', 'name': '42 - Tipaza', 'name_ar': 'تيبازة - 42'},
+  {'id': 'mila', 'name': '43 - Mila', 'name_ar': 'ميلة - 43'},
+  {'id': 'ain defla', 'name': '44 - Aïn Defla', 'name_ar': 'عين الدفلى - 44'},
+  {'id': 'naama', 'name': '45 - Naâma', 'name_ar': 'النعامة - 45'},
+  {
+    'id': 'ain temouchent',
+    'name': '46 - Aïn Témouchent',
+    'name_ar': 'عين تموشنت - 46',
+  },
+  {'id': 'ghardaia', 'name': '47 - Ghardaïa', 'name_ar': 'غرداية - 47'},
+  {'id': 'relizane', 'name': '48 - Relizane', 'name_ar': 'غليزان - 48'},
+  {'id': 'timimoun', 'name': '49 - Timimoun', 'name_ar': 'تيميمون - 49'},
+  {
+    'id': 'bordj badji mokhtar',
+    'name': '50 - Bordj Badji Mokhtar',
+    'name_ar': 'برج باجي مختار - 50',
+  },
+  {
+    'id': 'ouled djellal',
+    'name': '51 - Ouled Djellal',
+    'name_ar': 'أولاد جلال - 51',
+  },
+  {'id': 'beni abbes', 'name': '52 - Béni Abbès', 'name_ar': 'بني عباس - 52'},
+  {'id': 'in salah', 'name': '53 - In Salah', 'name_ar': 'عين صالح - 53'},
+  {'id': 'in guezzam', 'name': '54 - In Guezzam', 'name_ar': 'عين قزام - 54'},
+  {'id': 'touggourt', 'name': '55 - Touggourt', 'name_ar': 'تقرت - 55'},
+  {'id': 'djanet', 'name': '56 - Djanet', 'name_ar': 'جانت - 56'},
+  {'id': 'el m\'ghair', 'name': '57 - El M\'Ghair', 'name_ar': 'المغير - 57'},
+  {'id': 'el meniaa', 'name': '58 - El Meniaâ', 'name_ar': 'المنيعة - 58'},
 ];
 final Map<String, Map<String, dynamic>> chipExplanations = {
   // ==========================================
   // TYPE DE PEAU (skinOptions)
   // ==========================================
   "Normale": {
-    "title": {"fr": "Peau Normale", "en": "Normal Skin"},
+    "title": {"fr": "Peau Normale", "en": "Normal Skin", "ar": "بشرة عادية"},
     "desc": {
       "fr":
           "Peau équilibrée, ni trop grasse ni trop sèche. Elle est confortable, douce et sans imperfections majeures.",
       "en":
           "Balanced skin, neither too oily nor too dry. It feels comfortable, soft, and has no major imperfections.",
+      "ar":
+          "بشرة متوازنة، ليست دهنية جداً ولا جافة جداً. تكون مريحة وناعمة ولا تظهر عليها مشاكل واضحة.",
     },
     "image": "assets/puces/skin_normal.png",
   },
   "Sèche": {
-    "title": {"fr": "Peau Sèche", "en": "Dry Skin"},
+    "title": {"fr": "Peau Sèche", "en": "Dry Skin", "ar": "بشرة جافة"},
     "desc": {
       "fr":
           "Peau qui manque d'hydratation et de gras. Elle tiraille (surtout après le lavage), peut peler et manque de souplesse.",
       "en":
           "Skin that lacks moisture and oil. It feels tight (especially after washing), can flake, and lacks elasticity.",
+      "ar":
+          "بشرة تفتقر إلى الترطيب والدهون الطبيعية. قد تشعرين بالشد خاصة بعد الغسل، وقد تتقشر وتفقد مرونتها.",
     },
     "image": "assets/puces/skin_dry.png",
   },
   "Grasse": {
-    "title": {"fr": "Peau Grasse", "en": "Oily Skin"},
+    "title": {"fr": "Peau Grasse", "en": "Oily Skin", "ar": "بشرة دهنية"},
     "desc": {
       "fr":
           "Peau qui produit trop de sébum. Elle brille sur tout le visage, les pores sont visibles et elle est sujette aux boutons.",
       "en":
           "Skin that produces too much sebum. It looks shiny all over, has visible pores, and is prone to breakouts.",
+      "ar":
+          "بشرة تنتج كمية زائدة من الزهم. تبدو لامعة، تكون المسام أوضح، وقد تكون أكثر عرضة للحبوب.",
     },
     "image": "assets/puces/skin_oily.png",
   },
   "Mixte": {
-    "title": {"fr": "Peau Mixte", "en": "Combination Skin"},
+    "title": {
+      "fr": "Peau Mixte",
+      "en": "Combination Skin",
+      "ar": "بشرة مختلطة",
+    },
     "desc": {
       "fr":
           "Peau grasse et brillante sur la zone T (front, nez, menton) mais normale ou sèche sur les joues.",
       "en":
           "Oily and shiny skin on the T-zone (forehead, nose, chin) but normal or dry on the cheeks.",
+      "ar":
+          "بشرة تكون دهنية ولامعة في منطقة الجبهة والأنف والذقن، بينما تكون الخدود عادية أو جافة.",
     },
     "image": "assets/puces/skin_combination.png",
   },
@@ -127,52 +164,60 @@ final Map<String, Map<String, dynamic>> chipExplanations = {
   // TEXTURE DE CHEVEUX (hairTextures)
   // ==========================================
   "Lisses": {
-    "title": {"fr": "Cheveux Lisses", "en": "Straight Hair"},
+    "title": {"fr": "Cheveux Lisses", "en": "Straight Hair", "ar": "شعر أملس"},
     "desc": {
       "fr":
           "Cheveux sans aucune ondulation. Ils tombent tout droit et ont tendance à briller et à regraisser plus vite.",
       "en":
           "Hair with no curl or wave. It falls completely straight and tends to look shiny and get oily faster.",
+      "ar":
+          "شعر بدون تموجات أو تجعيدات. ينسدل بشكل مستقيم وغالباً يلمع ويدهن بسرعة أكبر.",
     },
     "image": "assets/puces/hair_straight.png",
   },
   "Ondulés": {
-    "title": {"fr": "Cheveux Ondulés", "en": "Wavy Hair"},
+    "title": {"fr": "Cheveux Ondulés", "en": "Wavy Hair", "ar": "شعر مموج"},
     "desc": {
       "fr":
           "Cheveux qui forment des vagues légères ou des ondulations en forme de 'S' sans faire de vraies boucles.",
       "en":
           "Hair that forms loose waves or 'S' shapes without making tight, defined curls.",
+      "ar": "شعر يشكل تموجات خفيفة أو شكل S، بدون تجعيدات ضيقة وواضحة.",
     },
     "image": "assets/puces/hair_wavy.png",
   },
   "Bouclés": {
-    "title": {"fr": "Cheveux Bouclés", "en": "Curly Hair"},
+    "title": {"fr": "Cheveux Bouclés", "en": "Curly Hair", "ar": "شعر كيرلي"},
     "desc": {
       "fr":
           "Cheveux qui forment de vraies boucles bien définies et élastiques (comme des ressorts en spirale).",
       "en":
           "Hair that forms distinct, well-defined, and bouncy curls (like spiral springs).",
+      "ar": "شعر يشكل خصلات كيرلي واضحة ومرنة، مثل اللفات الحلزونية.",
     },
     "image": "assets/puces/hair_curly.png",
   },
   "Frisés": {
-    "title": {"fr": "Cheveux Frisés", "en": "Coily Hair"},
+    "title": {"fr": "Cheveux Frisés", "en": "Coily Hair", "ar": "شعر مجعد"},
     "desc": {
       "fr":
           "Boucles très petites, serrées et denses. Les cheveux ont beaucoup de volume et rétrécissent beaucoup au séchage.",
       "en":
           "Very small, tight, and dense curls. The hair has a lot of volume and experiences significant shrinkage when dry.",
+      "ar":
+          "تجعيدات صغيرة وضيقة وكثيفة. يكون الشعر كثير الحجم وينكمش بوضوح عند الجفاف.",
     },
     "image": "assets/puces/hair_coily.png",
   },
   "Crépus": {
-    "title": {"fr": "Cheveux Crépus", "en": "Kinky Hair"},
+    "title": {"fr": "Cheveux Crépus", "en": "Kinky Hair", "ar": "شعر أفرو"},
     "desc": {
       "fr":
           "Cheveux très serrés en forme de 'Z' ou sans forme de boucle définie. Ils sont naturellement très volumineux et fragiles.",
       "en":
           "Tightly packed hair forming 'Z' patterns or with no defined curl. It is naturally very voluminous and delicate.",
+      "ar":
+          "شعر شديد الالتفاف، قد يأخذ شكل Z أو لا تكون تجعيداته واضحة. يكون كثيفاً وحساساً بطبيعته.",
     },
     "image": "assets/puces/hair_kinky.png",
   },
@@ -181,42 +226,52 @@ final Map<String, Map<String, dynamic>> chipExplanations = {
   // ÉTAT DU CHEVEU (hairStates)
   // ==========================================
   "Secs": {
-    "title": {"fr": "Cheveux Secs", "en": "Dry Hair"},
+    "title": {"fr": "Cheveux Secs", "en": "Dry Hair", "ar": "شعر جاف"},
     "desc": {
       "fr":
           "Cheveux rêches au toucher, ternes, difficiles à démêler et qui cassent facilement ou forment des fourches.",
       "en":
           "Hair that feels rough, looks dull, is hard to detangle, and breaks easily or gets split ends.",
+      "ar":
+          "شعر خشن عند اللمس، باهت، صعب التسريح ويتكسر بسهولة أو تظهر فيه الأطراف المتقصفة.",
     },
     "image": "assets/puces/hair_dry.png",
   },
   "Normaux": {
-    "title": {"fr": "Cheveux Normaux", "en": "Normal Hair"},
+    "title": {"fr": "Cheveux Normaux", "en": "Normal Hair", "ar": "شعر عادي"},
     "desc": {
       "fr":
           "Cheveux sains, doux et brillants. Ils ne sont ni trop secs ni trop gras et se coiffent facilement.",
       "en":
           "Healthy, soft, and shiny hair. It is neither too dry nor too oily and is easy to style.",
+      "ar": "شعر صحي وناعم ولامع. ليس جافاً جداً ولا دهنياً جداً ويسهل تصفيفه.",
     },
     "image": "assets/puces/hair_normal.png",
   },
   "Gras": {
-    "title": {"fr": "Cheveux Gras", "en": "Oily Hair"},
+    "title": {"fr": "Cheveux Gras", "en": "Oily Hair", "ar": "شعر دهني"},
     "desc": {
       "fr":
           "Cheveux qui saturent vite de sébum. Ils deviennent lourds, luisants et plats seulement un ou deux jours après le lavage.",
       "en":
           "Hair that quickly buildup sebum. It feels heavy, looks shiny, and goes flat just one or two days after washing.",
+      "ar":
+          "شعر تتراكم فيه الدهون بسرعة. يصبح ثقيلاً ولامعاً ومسطحاً بعد يوم أو يومين من الغسل.",
     },
     "image": "assets/puces/hair_oily.png",
   },
   "Mixtes": {
-    "title": {"fr": "Cheveux Mixtes", "en": "Combination Hair"},
+    "title": {
+      "fr": "Cheveux Mixtes",
+      "en": "Combination Hair",
+      "ar": "شعر مختلط",
+    },
     "desc": {
       "fr":
           "Le cuir chevelu régraisse vite (racines grasses), mais les longueurs et les pointes restent sèches et abîmées.",
       "en":
           "The scalp gets oily quickly (oily roots), but the lengths and ends remain dry and damaged.",
+      "ar": "فروة الرأس تدهن بسرعة، لكن الأطوال والأطراف تبقى جافة أو متضررة.",
     },
     "image": "assets/puces/hair_combination.png",
   },
@@ -251,8 +306,10 @@ class _ProfileScreenState extends State<ProfileScreen>
 
   final Map<String, bool> _showSavedCheck = {};
   final Set<String> _showMerciFor = {};
+  final Map<String, Map<String, String>> _productTitleCache = {};
+  final Set<String> _loadingProductTitleIds = {};
 
-  final List<String> languages = const ['Français', 'Anglais'];
+  final List<String> languages = const ['Français', 'Anglais', 'Arabe'];
 
   // Valeurs techniques (Firebase)
   final List<String> skinOptions = const [
@@ -281,6 +338,125 @@ class _ProfileScreenState extends State<ProfileScreen>
 
   @override
   bool get wantKeepAlive => true;
+
+  String get _languageCode =>
+      Provider.of<LanguageProvider>(context, listen: false).languageCode;
+
+  bool get _isEnglish => _languageCode == 'en';
+  bool get _isArabic => _languageCode == 'ar';
+
+  String _tr(String key) => AppText.t(_languageCode, key);
+
+  String _priceLabel(Object? value) =>
+      AppText.formatPrice(_languageCode, value);
+
+  String _wilayaLabel(Map<String, String> wilaya) =>
+      _isArabic ? (wilaya['name_ar'] ?? wilaya['name']!) : wilaya['name']!;
+
+  String _optionLabel(String value) {
+    switch (value) {
+      case 'Normale':
+        return _tr('profile.skin.normal');
+      case 'Sèche':
+        return _tr('profile.skin.dry');
+      case 'Grasse':
+        return _tr('profile.skin.oily');
+      case 'Mixte':
+        return _tr('profile.skin.combination');
+      case 'Lisses':
+        return _tr('profile.hair.straight');
+      case 'Ondulés':
+        return _tr('profile.hair.wavy');
+      case 'Bouclés':
+        return _tr('profile.hair.curly');
+      case 'Frisés':
+        return _tr('profile.hair.coily');
+      case 'Crépus':
+        return _tr('profile.hair.kinky');
+      case 'Secs':
+        return _tr('profile.hair.dry');
+      case 'Normaux':
+        return _tr('profile.hair.normal');
+      case 'Gras':
+        return _tr('profile.hair.oily');
+      case 'Mixtes':
+        return _tr('profile.hair.mixed');
+      default:
+        return value;
+    }
+  }
+
+  String _statusLabel(String rawStatus, {bool uppercase = false}) {
+    final status = rawStatus.toLowerCase();
+    final key = status == 'shipped'
+        ? 'profile.shipped'
+        : status == 'delivered' || status == 'livré'
+        ? 'profile.delivered'
+        : status == 'cancelled'
+        ? 'profile.cancelled'
+        : 'profile.inProgress';
+    final label = _tr(key);
+    return uppercase ? label.toUpperCase() : label;
+  }
+
+  String _localizedOrderTitle(Map item) {
+    final String productId =
+        (item['productId'] ?? item['id'] ?? item['product_id'] ?? '')
+            .toString();
+    final String fallback = (item['title'] ?? _tr('profile.product'))
+        .toString();
+
+    if (_isArabic) {
+      final direct = item['title_ar']?.toString().trim();
+      if (direct != null && direct.isNotEmpty) return direct;
+
+      final cached = _productTitleCache[productId]?['ar']?.trim();
+      if (cached != null && cached.isNotEmpty) return cached;
+
+      _loadProductTitles(productId);
+      return fallback;
+    }
+
+    if (_isEnglish) {
+      final direct = (item['title_en'] ?? item['name_en'])?.toString().trim();
+      if (direct != null && direct.isNotEmpty) return direct;
+
+      final cached = _productTitleCache[productId]?['en']?.trim();
+      if (cached != null && cached.isNotEmpty) return cached;
+
+      _loadProductTitles(productId);
+      return fallback;
+    }
+
+    return fallback;
+  }
+
+  Future<void> _loadProductTitles(String productId) async {
+    if (productId.isEmpty ||
+        _productTitleCache.containsKey(productId) ||
+        _loadingProductTitleIds.contains(productId)) {
+      return;
+    }
+
+    _loadingProductTitleIds.add(productId);
+    try {
+      final doc = await _firestore.collection('products').doc(productId).get();
+      final data = doc.data();
+      if (data == null) return;
+
+      _productTitleCache[productId] = {
+        'fr': (data['title'] ?? '').toString(),
+        'en': (data['title_en'] ?? data['title'] ?? '').toString(),
+        'ar': (data['title_ar'] ?? data['title'] ?? '').toString(),
+      };
+
+      if (mounted) setState(() {});
+    } catch (e) {
+      debugPrint('Erreur chargement titre produit: $e');
+    } finally {
+      _loadingProductTitleIds.remove(productId);
+    }
+  }
 
   @override
   void initState() {
@@ -428,7 +604,7 @@ class _ProfileScreenState extends State<ProfileScreen>
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          isEn ? "Welcome back!" : "Bon retour parmi nous !",
+          _tr('checkout.authSuccess'),
           textAlign: TextAlign.center,
           style: const TextStyle(
             color: Colors.white,
@@ -447,10 +623,7 @@ class _ProfileScreenState extends State<ProfileScreen>
   void _showAuthError(bool isEn) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(
-          isEn ? "Authentication failed" : "Échec de l'authentification",
-          textAlign: TextAlign.center,
-        ),
+        content: Text(_tr('checkout.authFailed'), textAlign: TextAlign.center),
         backgroundColor: Colors.redAccent,
         behavior: SnackBarBehavior.floating,
         width: 250,
@@ -676,24 +849,20 @@ class _ProfileScreenState extends State<ProfileScreen>
     return await showDialog(
           context: context,
           builder: (context) => AlertDialog(
-            title: Text(isEn ? "Delete Account?" : "Supprimer le compte ?"),
-            content: Text(
-              isEn
-                  ? "Are you sure you want to permanently delete your account? This action is irreversible and all your data will be lost."
-                  : "Êtes-vous sûr de vouloir supprimer définitivement votre compte ? Cette action est irréversible et toutes vos données seront perdues.",
-            ),
+            title: Text(_tr('profile.deleteAccountQuestion')),
+            content: Text(_tr('profile.deleteAccountBody')),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(false),
                 child: Text(
-                  isEn ? "Cancel" : "Annuler",
+                  _tr('profile.cancel'),
                   style: const TextStyle(color: Colors.grey),
                 ),
               ),
               TextButton(
                 onPressed: () => Navigator.of(context).pop(true),
                 child: Text(
-                  isEn ? "Delete" : "Supprimer",
+                  _tr('profile.delete'),
                   style: const TextStyle(color: Colors.red),
                 ),
               ),
@@ -708,14 +877,8 @@ class _ProfileScreenState extends State<ProfileScreen>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(
-          isEn ? "Security Action Required" : "Action de sécurité requise",
-        ),
-        content: Text(
-          isEn
-              ? "For security reasons, please log out and log back in before deleting your account."
-              : "Pour des raisons de sécurité, veuillez vous déconnecter puis vous reconnecter avant de pouvoir supprimer votre compte.",
-        ),
+        title: Text(_tr('profile.securityRequired')),
+        content: Text(_tr('profile.securityBody')),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
@@ -733,24 +896,20 @@ class _ProfileScreenState extends State<ProfileScreen>
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(15),
             ),
-            title: Text(isEn ? "Logout" : "Déconnexion"),
-            content: Text(
-              isEn
-                  ? "Are you sure you want to log out?"
-                  : "Êtes-vous sûr de vouloir vous déconnecter ?",
-            ),
+            title: Text(_tr('profile.logoutQuestion')),
+            content: Text(_tr('profile.logoutBody')),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context, false),
                 child: Text(
-                  isEn ? "Cancel" : "Annuler",
+                  _tr('profile.cancel'),
                   style: const TextStyle(color: Colors.grey),
                 ),
               ),
               TextButton(
                 onPressed: () => Navigator.pop(context, true),
                 child: Text(
-                  isEn ? "Log Out" : "Se déconnecter",
+                  _tr('profile.logout'),
                   style: const TextStyle(color: Colors.red),
                 ),
               ),
@@ -773,21 +932,16 @@ class _ProfileScreenState extends State<ProfileScreen>
     }
     final productsToRate = _getUniqueProductsToRate().toList();
     final languageProvider = Provider.of<LanguageProvider>(context);
-    final bool isEn = languageProvider.selectedLanguage == 'Anglais';
+    final bool isEn = languageProvider.languageCode == 'en';
 
-    // Traductions
-    final String titleApp = isEn ? 'Profile' : 'Profil';
-    final String labelName = isEn ? 'Full Name' : 'Nom';
-    final String labelPhone = isEn ? 'Phone Number' : 'Téléphone';
-    final String labelHistory = isEn
-        ? 'Order History'
-        : 'Historique des commandes';
-    final String labelSkin = isEn ? 'Skin Type' : 'Type de peau';
-    final String labelHair = isEn ? 'Hair' : 'Cheveux';
-    final String labelAddressSec = isEn
-        ? 'Delivery Address'
-        : 'Adresse de livraison';
-    final String labelLang = isEn ? 'Language' : 'Langue';
+    final String titleApp = context.t('profile.title');
+    final String labelName = context.t('profile.fullName');
+    final String labelPhone = context.t('profile.phone');
+    final String labelHistory = context.t('profile.orderHistory');
+    final String labelSkin = context.t('profile.skinType');
+    final String labelHair = context.t('profile.hair');
+    final String labelAddressSec = context.t('profile.deliveryAddress');
+    final String labelLang = context.t('profile.language');
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -813,7 +967,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                 Column(
                   children: [
                     Text(
-                      isEn ? "Secure your account" : "Sécurisez votre compte",
+                      context.t('profile.secureAccount'),
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 15),
@@ -862,9 +1016,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                   ),
                             const SizedBox(width: 10),
                             Text(
-                              isEn
-                                  ? "Continue with Google"
-                                  : "Continuer avec Google",
+                              context.t('checkout.continueGoogle'),
                               style: const TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w500,
@@ -922,9 +1074,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                                     ),
                               const SizedBox(width: 10),
                               Text(
-                                isEn
-                                    ? "Continue with Apple"
-                                    : "Continuer avec Apple",
+                                context.t('checkout.continueApple'),
                                 style: const TextStyle(
                                   fontSize: 14,
                                   color: Colors.white,
@@ -939,9 +1089,7 @@ class _ProfileScreenState extends State<ProfileScreen>
 
                     const SizedBox(height: 15),
                     Text(
-                      isEn
-                          ? "To access your account anywhere"
-                          : "Pour retrouver votre compte partout",
+                      context.t('profile.accessAnywhere'),
                       style: TextStyle(
                         fontSize: 12,
                         color: Colors.grey.shade500,
@@ -953,7 +1101,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                 // Apparaît uniquement APRES la connexion Google ou Apple
                 _buildTextField(labelName, nameController, 'name'),
                 const SizedBox(height: 10),
-                _buildTextField('Email', emailController, 'email'),
+                _buildTextField(_tr('profile.email'), emailController, 'email'),
                 const SizedBox(height: 10),
                 _buildTextField(labelPhone, phoneController, 'phone'),
               ],
@@ -1040,7 +1188,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            isEn ? "Log Out" : "Se déconnecter",
+                            _tr('profile.logout'),
                             style: const TextStyle(
                               color: Colors.grey,
                               fontWeight: FontWeight.w500,
@@ -1086,11 +1234,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                           if (mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text(
-                                  isEn
-                                      ? "Account permanently deleted."
-                                      : "Compte supprimé définitivement.",
-                                ),
+                                content: Text(_tr('profile.accountDeleted')),
                               ),
                             );
                             Navigator.of(context).pushAndRemoveUntil(
@@ -1129,7 +1273,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            isEn ? "Delete Account" : "Supprimer le compte",
+                            context.t('profile.deleteAccount'),
                             style: const TextStyle(
                               color: Colors.redAccent,
                               fontWeight: FontWeight.w500,
@@ -1157,10 +1301,8 @@ class _ProfileScreenState extends State<ProfileScreen>
   ) {
     if (productsToRate.isEmpty) return const SizedBox.shrink();
 
-    final String labelRate = isEn
-        ? 'Rate your purchases 🛍️'
-        : 'Notez vos achats 🛍️';
-    final String labelMerci = isEn ? 'Thank you' : 'Merci';
+    final String labelRate = _tr('profile.ratePurchases');
+    final String labelMerci = _tr('profile.thankYou');
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1193,14 +1335,7 @@ class _ProfileScreenState extends State<ProfileScreen>
               final String pId = (item['productId'] ?? '').toString();
 
               // On vérifie ce que renvoient exactement les clés
-              final String? titleFr = item['title']?.toString();
-              final String? titleEnField = item['title_en']?.toString();
-
-              final String title = isEn
-                  ? ((titleEnField != null && titleEnField.isNotEmpty)
-                        ? titleEnField
-                        : (titleFr ?? 'Product'))
-                  : (titleFr ?? 'Produit');
+              final String title = _localizedOrderTitle(item);
 
               bool isShowingMerci = _showMerciFor.contains(pId);
 
@@ -1313,7 +1448,7 @@ class _ProfileScreenState extends State<ProfileScreen>
 
   Widget _buildVerticalHistory(bool isEn) {
     if (orderHistoryDocs.isEmpty) {
-      return Text(isEn ? "No orders" : "Aucune commande");
+      return Text(_tr('profile.noOrders'));
     }
     final displayedOrders = _showAllOrders
         ? orderHistoryDocs
@@ -1325,12 +1460,9 @@ class _ProfileScreenState extends State<ProfileScreen>
           final data = doc.data() as Map<String, dynamic>;
           final items = data['items'] as List?;
 
-          final String firstItemTitle = isEn
-              ? (items?[0]['title_en'] ??
-                    items?[0]['name_en'] ??
-                    items?[0]['title'] ??
-                    'Order')
-              : (items?[0]['title'] ?? 'Commande');
+          final String firstItemTitle = items != null && items.isNotEmpty
+              ? _localizedOrderTitle(items[0])
+              : _tr('profile.order');
 
           // --- LOGIQUE DE STATUT TRADUIT ET COLORÉ ---
           final rawStatus = (data['deliveryStatus'] ?? 'pending')
@@ -1341,16 +1473,16 @@ class _ProfileScreenState extends State<ProfileScreen>
           Color statusColor;
 
           if (rawStatus == 'shipped') {
-            displayStatus = isEn ? "Shipped" : "Expédiée";
+            displayStatus = _statusLabel(rawStatus);
             statusColor = Colors.blue;
           } else if (rawStatus == 'delivered') {
-            displayStatus = isEn ? "Delivered" : "Livrée";
+            displayStatus = _statusLabel(rawStatus);
             statusColor = Colors.green;
           } else if (rawStatus == 'cancelled') {
-            displayStatus = isEn ? "Cancelled" : "Annulée";
+            displayStatus = _statusLabel(rawStatus);
             statusColor = Colors.red;
           } else {
-            displayStatus = isEn ? "In progress" : "En cours";
+            displayStatus = _statusLabel(rawStatus);
             statusColor = Colors.orange;
           }
 
@@ -1396,10 +1528,8 @@ class _ProfileScreenState extends State<ProfileScreen>
             onPressed: () => setState(() => _showAllOrders = !_showAllOrders),
             child: Text(
               _showAllOrders
-                  ? (isEn ? "Show less" : "Voir moins")
-                  : (isEn
-                        ? "Show all (${orderHistoryDocs.length})"
-                        : "Voir tout (${orderHistoryDocs.length})"),
+                  ? _tr('profile.showLess')
+                  : "${_tr('profile.showAll')} (${orderHistoryDocs.length})",
               style: const TextStyle(
                 color: Colors.pink,
                 fontWeight: FontWeight.bold,
@@ -1414,14 +1544,7 @@ class _ProfileScreenState extends State<ProfileScreen>
     // Traduction rapide du statut pour la modale
     final rawStatus = data['deliveryStatus'].toString().toLowerCase();
     String displayStatus;
-    if (rawStatus == 'shipped') {
-      displayStatus = isEn ? "SHIPPED" : "EXPÉDIÉE";
-    } else if (rawStatus == 'delivered')
-      displayStatus = isEn ? "DELIVERED" : "LIVRÉE";
-    else if (rawStatus == 'cancelled')
-      displayStatus = isEn ? "CANCELLED" : "ANNULÉE";
-    else
-      displayStatus = isEn ? "IN PROGRESS" : "EN COURS";
+    displayStatus = _statusLabel(rawStatus, uppercase: true);
 
     showModalBottomSheet(
       context: context,
@@ -1438,7 +1561,7 @@ class _ProfileScreenState extends State<ProfileScreen>
             controller: scrollController,
             children: [
               Text(
-                isEn ? "Order Details" : "Détails de la commande",
+                _tr('profile.orderDetails'),
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 20,
@@ -1446,29 +1569,24 @@ class _ProfileScreenState extends State<ProfileScreen>
               ),
               const Divider(height: 30),
               _detailRow(
-                isEn ? "Status" : "Statut",
+                _tr('profile.status'),
                 displayStatus, // On utilise la version traduite ici
               ),
               _detailRow(
-                "Date",
+                _tr('profile.date'),
                 DateFormat(
-                  'dd MMMM yyyy HH:mm',
-                  isEn ? 'en_US' : 'fr_FR',
+                  _isArabic ? 'dd/MM/yyyy HH:mm' : 'dd MMMM yyyy HH:mm',
+                  _isEnglish ? 'en_US' : 'fr_FR',
                 ).format((data['orderDate'] as Timestamp).toDate()),
               ),
               const SizedBox(height: 20),
               Text(
-                isEn ? "Items" : "Articles",
+                _tr('profile.items'),
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
               if (data['items'] != null)
                 ...(data['items'] as List).map((it) {
-                  final String itemTitle = isEn
-                      ? (it['title_en'] ??
-                            it['name_en'] ??
-                            it['title'] ??
-                            'Product')
-                      : (it['title'] ?? 'Produit');
+                  final String itemTitle = _localizedOrderTitle(it);
 
                   return ListTile(
                     contentPadding: EdgeInsets.zero,
@@ -1477,23 +1595,23 @@ class _ProfileScreenState extends State<ProfileScreen>
                         : const Icon(Icons.image),
                     title: Text(itemTitle),
                     subtitle: Text(
-                      "${isEn ? 'Quantity' : 'Quantité'}: ${it['quantity']}",
+                      "${_tr('profile.quantity')}: ${it['quantity']}",
                     ),
-                    trailing: Text("${it['price']} DA"),
+                    trailing: Text(_priceLabel(it['price'])),
                   );
                 }),
               const Divider(),
               _detailRow(
-                isEn ? "Products Total" : "Total Produits",
-                "${data['totalProducts']} DA",
+                _tr('profile.productsTotal'),
+                _priceLabel(data['totalProducts']),
               ),
               _detailRow(
-                isEn ? "Delivery Fee" : "Frais livraison",
-                "${data['deliveryFee']} DA",
+                _tr('profile.deliveryFee'),
+                _priceLabel(data['deliveryFee']),
               ),
               _detailRow(
-                "TOTAL",
-                "${data['totalWithDelivery']} DA",
+                _tr('profile.total'),
+                _priceLabel(data['totalWithDelivery']),
                 isBold: true,
               ),
             ],
@@ -1589,20 +1707,20 @@ class _ProfileScreenState extends State<ProfileScreen>
 
             validator: (value) {
               if (value == null || value.trim().isEmpty) {
-                return "Champ requis";
+                return _tr('profile.requiredField');
               }
 
               // Validation téléphone algérien
               if (key == 'phone') {
                 if (!RegExp(r'^0[567]\d{8}$').hasMatch(value)) {
-                  return "Numéro invalide";
+                  return _tr('profile.invalidPhone');
                 }
               }
 
               // Validation adresse : commence par un numéro
               if (key == 'addressLine') {
                 if (!RegExp(r'^\d+\s+.+').hasMatch(value)) {
-                  return "L'adresse doit commencer par un numéro";
+                  return _tr('profile.addressMustStartNumber');
                 }
               }
 
@@ -1639,7 +1757,7 @@ class _ProfileScreenState extends State<ProfileScreen>
         const SizedBox(height: 10),
         TextFormField(
           controller: addressLineController,
-          decoration: _inputDecoration(isEn ? 'Address' : 'Adresse'),
+          decoration: _inputDecoration(_tr('profile.address')),
           onChanged: (v) => _saveField('addressLine', v),
         ),
         const SizedBox(height: 10),
@@ -1648,12 +1766,12 @@ class _ProfileScreenState extends State<ProfileScreen>
             Expanded(
               child: DropdownButtonFormField<String>(
                 initialValue: cityType.isEmpty ? null : cityType,
-                decoration: _inputDecoration(isEn ? 'Wilaya' : 'Wilaya'),
+                decoration: _inputDecoration(_tr('profile.wilaya')),
                 items: wilayasAlgerie
                     .map(
                       (wilaya) => DropdownMenuItem<String>(
                         value: wilaya['id'],
-                        child: Text(wilaya['name']!),
+                        child: Text(_wilayaLabel(wilaya)),
                       ),
                     )
                     .toList(),
@@ -1672,9 +1790,9 @@ class _ProfileScreenState extends State<ProfileScreen>
   }
 
   Widget _buildSkinSection(bool isEn, String title) {
-    final List<String> displaySkinOptions = isEn
-        ? ["Normal", "Dry", "Oily", "Combination"]
-        : skinOptions;
+    final List<String> displaySkinOptions = skinOptions
+        .map(_optionLabel)
+        .toList();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1708,9 +1826,7 @@ class _ProfileScreenState extends State<ProfileScreen>
               }
             },
             child: Text(
-              isEn
-                  ? "Don't know your skin type? Click here"
-                  : "Tu ne connais pas ton type de peau ? Clique ici",
+              _tr('profile.unknownSkinType'),
               style: const TextStyle(
                 fontSize: 12,
                 color: Colors.pink,
@@ -1724,12 +1840,8 @@ class _ProfileScreenState extends State<ProfileScreen>
   }
 
   Widget _buildHairSection(bool isEn, String title) {
-    final List<String> dispTextures = isEn
-        ? ["Straight", "Wavy", "Curly", "Coily", "Kinky"]
-        : hairTextures;
-    final List<String> dispStates = isEn
-        ? ["Dry", "Normal", "Oily", "Mixed"]
-        : hairStates;
+    final List<String> dispTextures = hairTextures.map(_optionLabel).toList();
+    final List<String> dispStates = hairStates.map(_optionLabel).toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1737,7 +1849,7 @@ class _ProfileScreenState extends State<ProfileScreen>
         Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
         const SizedBox(height: 10),
         Text(
-          isEn ? 'Hair Structure' : 'Structure du cheveu',
+          _tr('profile.hairStructure'),
           style: const TextStyle(fontSize: 12, color: Colors.grey),
         ),
         _buildChoiceChipsBilingual(
@@ -1755,7 +1867,7 @@ class _ProfileScreenState extends State<ProfileScreen>
           height: 15,
         ), // Légèrement augmenté pour espacer les deux sous-sections
         Text(
-          isEn ? 'Hair Condition' : 'État du cheveu',
+          _tr('profile.hairCondition'),
           style: const TextStyle(fontSize: 12, color: Colors.grey),
         ),
         _buildChoiceChipsBilingual(
@@ -1780,6 +1892,8 @@ class _ProfileScreenState extends State<ProfileScreen>
       String displayName = l;
       if (l == 'Anglais') {
         displayName = 'English';
+      } else if (l == 'Arabe') {
+        displayName = 'العربية';
       }
 
       return DropdownMenuItem<String>(
@@ -1841,10 +1955,11 @@ class _ProfileScreenState extends State<ProfileScreen>
 
   void _showChipExplanation(BuildContext context, String chipValue, bool isEn) {
     final info = chipExplanations[chipValue];
-    if (info == null)
+    if (info == null) {
       return; // Si aucune explication n'est configurée pour cette puce
+    }
 
-    final lang = isEn ? "en" : "fr";
+    final lang = _languageCode;
 
     showModalBottomSheet(
       context: context,
@@ -1871,7 +1986,7 @@ class _ProfileScreenState extends State<ProfileScreen>
 
               // Titre de l'explication
               Text(
-                info["title"][lang],
+                info["title"][lang] ?? info["title"]["fr"],
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -1886,7 +2001,7 @@ class _ProfileScreenState extends State<ProfileScreen>
 
               // Texte descriptif
               Text(
-                info["desc"][lang],
+                info["desc"][lang] ?? info["desc"]["fr"],
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: 14,

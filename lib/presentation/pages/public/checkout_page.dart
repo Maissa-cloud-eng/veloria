@@ -10,6 +10,8 @@ import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:provider/provider.dart'; // Import ajouté
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+import 'package:veloria/core/i18n/app_text.dart';
+import 'package:veloria/presentation/pages/admin/analytics_helper.dart';
 import 'package:veloria/presentation/controllers/cart_controllers.dart';
 import 'package:veloria/presentation/states/language_provider.dart'; // Import ajouté
 import 'package:veloria/presentation/pages/public/profile_page.dart';
@@ -29,6 +31,22 @@ class CheckoutPage extends StatefulWidget {
 
 class _CheckoutPageState extends State<CheckoutPage> {
   final _formKey = GlobalKey<FormState>();
+
+  String _priceLabel(Object? value) {
+    final languageCode = Provider.of<LanguageProvider>(
+      context,
+      listen: false,
+    ).languageCode;
+    return AppText.formatPrice(languageCode, value);
+  }
+
+  String _tr(String key) {
+    final languageCode = Provider.of<LanguageProvider>(
+      context,
+      listen: false,
+    ).languageCode;
+    return AppText.t(languageCode, key);
+  }
 
   final Map<String, TextEditingController> _controllers = {
     'name': TextEditingController(),
@@ -56,7 +74,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          isEn ? "Welcome back!" : "Bon retour parmi nous !",
+          _tr("checkout.authSuccess"),
           textAlign: TextAlign.center,
           style: const TextStyle(
             color: Colors.white,
@@ -73,12 +91,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
   }
 
   Future<void> _linkWithGoogle() async {
-    final isEn =
-        Provider.of<LanguageProvider>(
-          context,
-          listen: false,
-        ).selectedLanguage ==
-        'Anglais';
+    final isEn = Provider.of<LanguageProvider>(context, listen: false).isEn;
 
     setState(() => _isLinkingGoogle = true);
 
@@ -123,9 +136,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-              isEn ? "Authentication failed" : "Échec de l'authentification",
-            ),
+            content: Text(_tr("checkout.authFailed")),
             backgroundColor: Colors.redAccent,
           ),
         );
@@ -138,12 +149,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
   }
 
   Future<void> _linkWithApple() async {
-    final isEn =
-        Provider.of<LanguageProvider>(
-          context,
-          listen: false,
-        ).selectedLanguage ==
-        'Anglais';
+    final isEn = Provider.of<LanguageProvider>(context, listen: false).isEn;
 
     setState(() => _isLinkingApple = true);
 
@@ -239,9 +245,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-              isEn ? "Authentication failed" : "Échec de l'authentification",
-            ),
+            content: Text(_tr("checkout.authFailed")),
             backgroundColor: Colors.redAccent,
           ),
         );
@@ -338,17 +342,12 @@ class _CheckoutPageState extends State<CheckoutPage> {
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text(
-          isEn ? "Login Required" : "Connexion requise",
-          textAlign: TextAlign.center,
-        ),
+        title: Text(_tr("checkout.loginRequired"), textAlign: TextAlign.center),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              isEn
-                  ? "Please connect to secure your order and find it on all your devices."
-                  : "Veuillez vous connecter pour sécuriser votre commande et la retrouver sur tous vos appareils.",
+              _tr("checkout.loginRequiredBody"),
               textAlign: TextAlign.center,
               style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
             ),
@@ -419,9 +418,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                 _linkWithGoogle(); // Lance la connexion Google
               },
               icon: Image.asset('assets/google_icon.png', height: 18),
-              label: Text(
-                isEn ? "Continue with Google" : "Continuer avec Google",
-              ),
+              label: Text(_tr("checkout.continueGoogle")),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white,
                 foregroundColor: Colors.black87,
@@ -444,12 +441,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
   Future<void> _confirmOrder() async {
     final user = FirebaseAuth.instance.currentUser;
-    final isEn =
-        Provider.of<LanguageProvider>(
-          context,
-          listen: false,
-        ).selectedLanguage ==
-        'Anglais';
+    final isEn = Provider.of<LanguageProvider>(context, listen: false).isEn;
 
     if (user == null || user.isAnonymous) {
       _showLoginRequiredDialog(isEn);
@@ -462,15 +454,9 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
     if (deliveryType == null ||
         (deliveryType == "bureau" && selectedBureau == null)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            isEn
-                ? "Please select a delivery option"
-                : "Veuillez sélectionner une option de livraison",
-          ),
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(_tr("checkout.selectDelivery"))));
       return;
     }
 
@@ -514,7 +500,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
           'productId': pId,
           'title': item['title'] ?? 'Produit',
           'title_en': item['title_en'] ?? item['titleEn'] ?? item['title'],
-          'brand': item['brand'] ?? (isEn ? 'Unknown' : 'Marque inconnue'),
+          'title_ar': item['title_ar'] ?? item['titleAr'] ?? item['title'],
+          'brand': item['brand'] ?? _tr("cart.unknownBrand"),
           'price': double.tryParse(item['price'].toString()) ?? 0.0,
           'quantity': int.tryParse(item['quantity'].toString()) ?? 1,
           'costPrice':
@@ -527,6 +514,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
       }).toList();
 
       final double finalTotalWithShipping = widget.total + deliveryFee;
+      final analyticsContext = await getAnalyticsContext();
       WriteBatch batch = FirebaseFirestore.instance.batch();
 
       // Mise à jour Profil
@@ -564,6 +552,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
         'fcmToken': fcmToken,
         'status': 'ordered',
         'orderDate': timestamp,
+        'analyticsSessionId': analyticsContext['sessionId'],
+        'analyticsDeviceId': analyticsContext['deviceId'],
         'shippingInfo': {
           'name': _controllers['name']!.text.trim(),
           'phone': _controllers['phone']!.text.trim(),
@@ -583,13 +573,22 @@ class _CheckoutPageState extends State<CheckoutPage> {
       }, SetOptions(merge: true));
 
       await batch.commit();
+      await logEvent(
+        'purchase_completed',
+        extra: {
+          'orderId': orderRef.id,
+          'totalProducts': widget.total,
+          'totalWithDelivery': finalTotalWithShipping,
+        },
+      );
+      if (!mounted) return;
       // C'est cette ligne qui tue le badge "1" définitivement après l'achat
       Provider.of<CartController>(context, listen: false).setCount(0);
       if (mounted) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(isEn ? "Order confirmed!" : "Commande confirmée !"),
+            content: Text(_tr("checkout.orderConfirmed")),
             backgroundColor: Colors.green,
           ),
         );
@@ -611,7 +610,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
   @override
   Widget build(BuildContext context) {
     final languageProvider = Provider.of<LanguageProvider>(context);
-    final bool isEn = languageProvider.selectedLanguage == 'Anglais';
+    final bool isEn = languageProvider.isEn;
 
     if (isLoading) {
       return const Scaffold(
@@ -622,7 +621,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          isEn ? "Payment" : "Paiement",
+          _tr("checkout.title"),
           style: const TextStyle(color: Colors.white),
         ),
         backgroundColor: Colors.pink,
@@ -662,7 +661,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
               ),
             ),
             child: Text(
-              isEn ? "Confirm Order" : "Confirmer la commande",
+              _tr("checkout.confirmOrder"),
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 18,
@@ -681,9 +680,9 @@ class _CheckoutPageState extends State<CheckoutPage> {
     final bool isRealUser = currentUser != null && !currentUser.isAnonymous;
 
     // --- LOGIQUE DU LABEL DYNAMIQUE (REMISE ICI) ---
-    String addressLabel = isEn ? 'Exact Address' : 'Adresse exacte';
+    String addressLabel = _tr("checkout.exactAddress");
     if (deliveryType == "bureau") {
-      addressLabel += isEn ? " (Optional)" : " (Optionnel)";
+      addressLabel += " (${_tr("checkout.optional")})";
     }
     return Form(
       key: _formKey,
@@ -695,9 +694,9 @@ class _CheckoutPageState extends State<CheckoutPage> {
             _buildLoginPrompt(isEn),
             const SizedBox(height: 10),
           ] else ...[
-            _buildTextField('name', isEn ? 'Full Name' : 'Nom complet', isEn),
-            _buildTextField('email', 'Email', isEn),
-            _buildTextField('phone', isEn ? 'Phone' : 'Téléphone', isEn),
+            _buildTextField('name', _tr("checkout.fullName"), isEn),
+            _buildTextField('email', _tr("checkout.email"), isEn),
+            _buildTextField('phone', _tr("checkout.phone"), isEn),
           ],
 
           const SizedBox(height: 10),
@@ -710,7 +709,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                   ? null
                   : _controllers['city']!.text,
               decoration: InputDecoration(
-                labelText: isEn ? 'City (Wilaya)' : 'Ville (Wilaya)',
+                labelText: _tr("checkout.city"),
                 filled: true,
                 fillColor: Colors.white,
                 border: OutlineInputBorder(
@@ -730,9 +729,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                 }
               },
               validator: (value) => (value == null || value.isEmpty)
-                  ? (isEn
-                        ? "Please choose a wilaya"
-                        : "Veuillez choisir une wilaya")
+                  ? _tr("checkout.chooseWilaya")
                   : null,
             ),
           ),
@@ -743,7 +740,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
             customValidator: (value) {
               if (deliveryType == "domicile" &&
                   (value == null || value.isEmpty)) {
-                return isEn ? "Address required" : "Adresse requise";
+                return _tr("checkout.addressRequired");
               }
               return null;
             },
@@ -810,22 +807,20 @@ class _CheckoutPageState extends State<CheckoutPage> {
             customValidator ??
             (value) {
               if (value == null || value.trim().isEmpty) {
-                return isEn ? "Required field" : "Champ requis";
+                return _tr("checkout.requiredField");
               }
 
               // Validation téléphone
               if (key == 'phone') {
                 if (!RegExp(r'^0[567]\d{8}$').hasMatch(value)) {
-                  return isEn ? "Invalid phone number" : "Numéro invalide";
+                  return _tr("checkout.invalidPhone");
                 }
               }
 
               // Validation adresse
               if (key == 'addressLine') {
                 if (!RegExp(r'^\d+\s+.+').hasMatch(value)) {
-                  return isEn
-                      ? "Address must start with a number"
-                      : "L'adresse doit commencer par un numéro";
+                  return _tr("checkout.addressMustStartNumber");
                 }
               }
 
@@ -848,7 +843,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  isEn ? "Shipping Info" : "Infos de livraison",
+                  _tr("checkout.shippingInfo"),
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
@@ -857,7 +852,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                 TextButton(
                   onPressed: () => setState(() => useExistingData = false),
                   child: Text(
-                    isEn ? "Edit" : "Modifier",
+                    _tr("checkout.edit"),
                     style: const TextStyle(color: Colors.pink),
                   ),
                 ),
@@ -883,7 +878,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          isEn ? "Delivery Option" : "Option de livraison",
+          _tr("checkout.deliveryOption"),
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
         ),
         const SizedBox(height: 10),
@@ -897,9 +892,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
             children: [
               RadioListTile<String>(
                 title: Text(
-                  isEn
-                      ? "Home Delivery (${data['domicile']} DA)"
-                      : "Livraison à domicile (${data['domicile']} DA)",
+                  "${_tr("checkout.homeDelivery")} (${_priceLabel(data['domicile'])})",
                 ),
                 value: "domicile",
                 groupValue: deliveryType,
@@ -913,11 +906,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
               if (bureaux.isNotEmpty) ...[
                 const Divider(height: 1),
                 RadioListTile<String>(
-                  title: Text(
-                    isEn
-                        ? "Pickup point (Delivery Office)"
-                        : "Point relais (Bureau de livraison)",
-                  ),
+                  title: Text(_tr("checkout.pickupPoint")),
                   value: "bureau",
                   groupValue: deliveryType,
                   activeColor: Colors.pink,
@@ -991,7 +980,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(
-                            isEn ? "OFFICIAL CARRIER" : "TRANSPORTEUR OFFICIEL",
+                            _tr("checkout.officialCarrier"),
                             style: TextStyle(
                               fontSize: 9,
                               fontWeight: FontWeight.bold,
@@ -1002,9 +991,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                         ),
 
                         Text(
-                          isEn
-                              ? "Delivery to Pick-up Point"
-                              : "Livraison en Point Relais",
+                          _tr("checkout.pickupDelivery"),
                           style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
@@ -1022,11 +1009,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                               fontFamily: 'Sans-Serif',
                             ), // Aligne sur ta font globale
                             children: [
-                              TextSpan(
-                                text: isEn
-                                    ? "Collect your package at a "
-                                    : "Retrait de votre colis au bureau ",
-                              ),
+                              TextSpan(text: _tr("checkout.collectPrefix")),
                               const TextSpan(
                                 text: "Packers Dz",
                                 style: TextStyle(
@@ -1044,7 +1027,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
                   // Prix fixe
                   Text(
-                    "${bureaux.first['price']} DA",
+                    _priceLabel(bureaux.first['price']),
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -1073,9 +1056,9 @@ class _CheckoutPageState extends State<CheckoutPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(isEn ? "Subtotal" : "Sous-total"),
+              Text(_tr("checkout.subtotal")),
               Text(
-                "${widget.total.toStringAsFixed(2)} DA",
+                _priceLabel(widget.total.toStringAsFixed(2)),
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
             ],
@@ -1084,9 +1067,9 @@ class _CheckoutPageState extends State<CheckoutPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(isEn ? "Shipping Fees" : "Frais de livraison"),
+              Text(_tr("checkout.shippingFees")),
               Text(
-                "${deliveryFee.toStringAsFixed(2)} DA",
+                _priceLabel(deliveryFee.toStringAsFixed(2)),
                 style: const TextStyle(
                   color: Colors.green,
                   fontWeight: FontWeight.bold,
@@ -1099,14 +1082,14 @@ class _CheckoutPageState extends State<CheckoutPage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                "TOTAL",
+                _tr("checkout.total"),
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 18,
                 ),
               ),
               Text(
-                "${(widget.total + deliveryFee).toStringAsFixed(2)} DA",
+                _priceLabel((widget.total + deliveryFee).toStringAsFixed(2)),
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 20,
@@ -1131,7 +1114,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
             Icon(Icons.account_circle, size: 40, color: Colors.pink.shade300),
             const SizedBox(height: 10),
             Text(
-              isEn ? "Identification required" : "Identification requise",
+              _tr("checkout.identificationRequired"),
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
             const SizedBox(height: 15),
@@ -1187,7 +1170,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                               ),
                         const SizedBox(width: 10),
                         Text(
-                          isEn ? "Continue with Apple" : "Continuer avec Apple",
+                          _tr("checkout.continueApple"),
                           style: const TextStyle(
                             fontSize: 15,
                             color: Colors.white,
@@ -1205,7 +1188,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                 onPressed: _linkWithGoogle,
                 icon: Image.asset('assets/google_icon.png', height: 20),
                 label: Text(
-                  isEn ? "Continue with Google" : "Continuer avec Google",
+                  _tr("checkout.continueGoogle"),
                   style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w500,

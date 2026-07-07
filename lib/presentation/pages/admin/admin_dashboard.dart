@@ -16,8 +16,43 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
     end: DateTime.now(),
   );
 
+  String _visitorKey(Map<String, dynamic> data, String docId) {
+    for (final key in [
+      'userId',
+      'deviceId',
+      'visitorId',
+      'sessionId',
+      'clientId',
+    ]) {
+      final value = data[key]?.toString().trim();
+      if (value != null && value.isNotEmpty && value.toLowerCase() != 'null') {
+        return '$key:$value';
+      }
+    }
+    return 'doc:$docId';
+  }
+
+  String _sessionKey(Map<String, dynamic> data, String docId) {
+    final sessionId = data['sessionId']?.toString().trim();
+    if (sessionId != null &&
+        sessionId.isNotEmpty &&
+        sessionId.toLowerCase() != 'null') {
+      return 'session:$sessionId';
+    }
+    return _visitorKey(data, docId);
+  }
+
+  bool _isInSelectedRange(DateTime date, DateTime start, DateTime end) {
+    return !date.isBefore(start) && !date.isAfter(end);
+  }
+
   @override
   Widget build(BuildContext context) {
+    final DateTime filterStart = DateTime(
+      _selectedDateRange.start.year,
+      _selectedDateRange.start.month,
+      _selectedDateRange.start.day,
+    );
     final DateTime filterEnd = DateTime(
       _selectedDateRange.end.year,
       _selectedDateRange.end.month,
@@ -68,231 +103,193 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
             );
           }
 
-          // AJOUT DU STREAM CARTS POUR LE FUNNEL
           return StreamBuilder<QuerySnapshot>(
-            stream: FirebaseFirestore.instance.collection('carts').snapshots(),
-            builder: (context, cartSnapshot) {
-              return StreamBuilder<QuerySnapshot>(
-                stream: FirebaseFirestore.instance
-                    .collection('visits')
-                    .snapshots(),
-                builder: (context, visitSnapshot) {
-                  double totalCA = 0;
-                  double totalProfit = 0;
-                  int orderedCount = 0;
-                  int totalVisits = 0;
+            stream: FirebaseFirestore.instance
+                .collection('analytics')
+                .snapshots(),
+            builder: (context, analyticsSnapshot) {
+              double totalCA = 0;
+              double totalProfit = 0;
+              int orderedCount = 0;
+              int totalSessions = 0;
 
-                  // Variables pour le Funnel
-                  int initiatedInCarts = 0;
-                  int reachedInCarts = 0;
+              final Set<String> uniqueVisitors = {};
+              final Set<String> sessions = {};
+              final Set<String> productViewSessions = {};
+              final Set<String> addToCartSessions = {};
+              final Set<String> checkoutSessions = {};
+              final Set<String> purchaseSessions = {};
 
-                  Map<String, int> productSales = {};
-                  Map<String, int> userOrderCount = {};
+              Map<String, int> productSales = {};
+              Map<String, int> userOrderCount = {};
 
-                  final orderDocs = orderSnapshot.data!.docs.where((doc) {
-                    final data = doc.data() as Map<String, dynamic>;
-                    final dynamic ts = data['orderDate'];
-                    if (ts == null || ts is! Timestamp) return false;
-                    DateTime date = ts.toDate();
-                    return date.isAfter(_selectedDateRange.start) &&
-                        date.isBefore(filterEnd) &&
-                        doc.id != "OE0N2pbyQjXdqG69FQXa";
-                  }).toList();
+              final orderDocs = orderSnapshot.data!.docs.where((doc) {
+                final data = doc.data() as Map<String, dynamic>;
+                final dynamic ts = data['orderDate'];
+                if (ts == null || ts is! Timestamp) return false;
+                DateTime date = ts.toDate();
+                return _isInSelectedRange(date, filterStart, filterEnd) &&
+                    doc.id != "OE0N2pbyQjXdqG69FQXa";
+              }).toList();
 
-                  int uniqueVisitsCount = 0;
+              if (analyticsSnapshot.hasData) {
+                for (var doc in analyticsSnapshot.data!.docs) {
+                  final data = doc.data() as Map<String, dynamic>;
+                  final dynamic ts = data['timestamp'];
+                  if (ts == null || ts is! Timestamp) continue;
 
-                  if (visitSnapshot.hasData) {
-                    final Map<String, bool> dailyUniqueMap = {};
-
-                    for (var doc in visitSnapshot.data!.docs) {
-                      final data = doc.data() as Map<String, dynamic>;
-                      final dynamic ts = data['timestamp'];
-                      if (ts == null || ts is! Timestamp) continue;
-
-                      DateTime date = ts.toDate();
-
-                      if (date.isAfter(_selectedDateRange.start) &&
-                          date.isBefore(filterEnd)) {
-                        totalVisits++; // On garde le total des clics pour info
-
-                        // --- CORRECTION ICI ---
-                        // On essaye de trouver un identifiant stable pour l'invité
-                        // Si tu n'as pas encore de 'deviceId' dans ta DB, utilise au moins le 'userId'
-                        // S'il n'y a rien, on met 'guest' au lieu de 'anonymous_${doc.id}'
-                        String visitorId =
-                            data['userId'] ?? data['deviceId'] ?? 'GUEST';
-
-                        // Clé unique par utilisateur ET par jour
-                        String dayKey =
-                            "${visitorId}_${date.year}${date.month}${date.day}";
-                        dailyUniqueMap[dayKey] = true;
-                      }
-                    }
-
-                    // Ici on a le vrai nombre d'humains uniques par jour cumulés
-                    uniqueVisitsCount = dailyUniqueMap.length;
-                  }
-                  // 1. CALCUL DES DONNÉES DE COMMANDES RÉUSSIES
-                  for (var doc in orderDocs) {
-                    final data = doc.data() as Map<String, dynamic>;
-                    final String status = data['deliveryStatus'] ?? '';
-
-                    // --- AJOUT DE LA CONDITION DE FILTRAGE ---
-                    if (status == 'cancelled') continue;
-                    // ------------------------------------------
-
-                    orderedCount++; // On ne compte que les commandes non annulées
-                    String userId = data['userId'] ?? 'guest';
-                    userOrderCount[userId] = (userOrderCount[userId] ?? 0) + 1;
-
-                    double amount =
-                        double.tryParse(
-                          data['totalProducts']?.toString() ?? '0',
-                        ) ??
-                        0;
-                    totalCA += amount;
-
-                    final List items = data['items'] ?? [];
-                    for (var item in items) {
-                      double price =
-                          double.tryParse(
-                            item['price'].toString().replaceAll(
-                              RegExp(r'[^0-9.]'),
-                              '',
-                            ),
-                          ) ??
-                          0;
-                      double cost =
-                          double.tryParse(
-                            item['costPrice']?.toString() ?? '0',
-                          ) ??
-                          0;
-                      int qty =
-                          int.tryParse(item['quantity']?.toString() ?? '1') ??
-                          1;
-                      if (cost > 0) totalProfit += (price - cost) * qty;
-                      productSales["${item['title']}|${item['brand']}"] =
-                          (productSales["${item['title']}|${item['brand']}"] ??
-                              0) +
-                          qty;
-                    }
+                  final date = ts.toDate();
+                  if (!_isInSelectedRange(date, filterStart, filterEnd)) {
+                    continue;
                   }
 
-                  // 2. CALCUL DES STATUTS DANS LA TABLE CARTS (FILTRÉS PAR DATE)
-                  if (cartSnapshot.hasData) {
-                    for (var doc in cartSnapshot.data!.docs) {
-                      final data = doc.data() as Map<String, dynamic>;
+                  final sessionKey = _sessionKey(data, doc.id);
+                  sessions.add(sessionKey);
+                  uniqueVisitors.add(_visitorKey(data, doc.id));
 
-                      // --- AJOUT DU FILTRE DE DATE ---
-                      final dynamic ts =
-                          data['updatedAt']; // Utilise le timestamp de ton choix
-                      if (ts == null || ts is! Timestamp) continue;
-
-                      DateTime date = ts.toDate();
-                      // On vérifie si la date du panier est dans la plage sélectionnée
-                      if (date.isAfter(_selectedDateRange.start) &&
-                          date.isBefore(filterEnd)) {
-                        final String status = data['status'] ?? '';
-                        if (status == 'initiated') initiatedInCarts++;
-                        if (status == 'reached_checkout') reachedInCarts++;
-                      }
-                      // -------------------------------
-                    }
+                  switch (data['event']) {
+                    case 'product_view':
+                      productViewSessions.add(sessionKey);
+                      break;
+                    case 'add_to_cart':
+                      addToCartSessions.add(sessionKey);
+                      break;
+                    case 'reached_checkout':
+                      checkoutSessions.add(sessionKey);
+                      break;
+                    case 'purchase_completed':
+                      purchaseSessions.add(sessionKey);
+                      break;
                   }
+                }
 
-                  // LOGIQUE DU FUNNEL CUMULATIF
-                  // Initiated = Ceux en cours dans carts + Ceux qui ont fini (orders)
-                  int funnelInitiated =
-                      initiatedInCarts + reachedInCarts + orderedCount;
-                  // Reached = Ceux qui sont au checkout dans carts + Ceux qui ont fini (orders)
-                  int funnelReached = reachedInCarts + orderedCount;
-                  // Ordered = Uniquement ceux qui ont fini
-                  int funnelOrdered = orderedCount;
+                totalSessions = sessions.length;
+              }
+              // 1. CALCUL DES DONNÉES DE COMMANDES RÉUSSIES
+              for (var doc in orderDocs) {
+                final data = doc.data() as Map<String, dynamic>;
+                final String status = data['deliveryStatus'] ?? '';
 
-                  double conversionRate = uniqueVisitsCount > 0
-                      ? (orderedCount / uniqueVisitsCount) * 100
-                      : 0;
-                  double panierMoyen = orderedCount > 0
-                      ? totalCA / orderedCount
-                      : 0;
-                  int repeatCustomers = userOrderCount.values
-                      .where((count) => count > 1)
-                      .length;
-                  double repeatRate = userOrderCount.isNotEmpty
-                      ? (repeatCustomers / userOrderCount.length) * 100
-                      : 0;
+                // --- AJOUT DE LA CONDITION DE FILTRAGE ---
+                if (status == 'cancelled') continue;
+                // ------------------------------------------
 
-                  return SingleChildScrollView(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
+                orderedCount++; // On ne compte que les commandes non annulées
+                String userId = data['userId'] ?? 'guest';
+                userOrderCount[userId] = (userOrderCount[userId] ?? 0) + 1;
+
+                double amount =
+                    double.tryParse(data['totalProducts']?.toString() ?? '0') ??
+                    0;
+                totalCA += amount;
+
+                final List items = data['items'] ?? [];
+                for (var item in items) {
+                  double price =
+                      double.tryParse(
+                        item['price'].toString().replaceAll(
+                          RegExp(r'[^0-9.]'),
+                          '',
+                        ),
+                      ) ??
+                      0;
+                  double cost =
+                      double.tryParse(item['costPrice']?.toString() ?? '0') ??
+                      0;
+                  int qty =
+                      int.tryParse(item['quantity']?.toString() ?? '1') ?? 1;
+                  if (cost > 0) totalProfit += (price - cost) * qty;
+                  productSales["${item['title']}|${item['brand']}"] =
+                      (productSales["${item['title']}|${item['brand']}"] ?? 0) +
+                      qty;
+                }
+              }
+
+              final int funnelInitiated = addToCartSessions.length;
+              final int funnelReached = checkoutSessions.length;
+              final int funnelOrdered = purchaseSessions.length;
+
+              double conversionRate = totalSessions > 0
+                  ? (funnelOrdered / totalSessions) * 100
+                  : 0;
+              double panierMoyen = orderedCount > 0
+                  ? totalCA / orderedCount
+                  : 0;
+              int repeatCustomers = userOrderCount.values
+                  .where((count) => count > 1)
+                  .length;
+              double repeatRate = userOrderCount.isNotEmpty
+                  ? (repeatCustomers / userOrderCount.length) * 100
+                  : 0;
+
+              return SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    Row(
                       children: [
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _buildSmallStatCard(
-                                "Commandes",
-                                orderedCount.toString(),
-                                Icons.shopping_bag,
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: _buildSmallStatCard(
-                                "Visiteurs (Uniques)",
-                                uniqueVisitsCount.toString(),
-                                Icons.visibility,
-                                subtitle:
-                                    "$totalVisits sessions", // On ajoute le total ici
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        _buildShopifyCard(
-                          "Chiffre d'Affaires",
-                          "${totalCA.toStringAsFixed(0)} DA",
-                          "Bénéfice Net: ${totalProfit.toStringAsFixed(0)} DA",
-                        ),
-                        const SizedBox(height: 12),
-                        _buildShopifyCard(
-                          "Performance",
-                          "Panier Moyen: ${panierMoyen.toStringAsFixed(0)} DA",
-                          "Fidélité (Repeat): ${repeatRate.toStringAsFixed(1)}%",
-                        ),
-                        const SizedBox(height: 12),
-
-                        // APPEL DU FUNNEL CORRIGÉ AVEC LES NOUVELLES VARIABLES
-                        _buildConversionFunnel(
-                          totalVisits,
-                          funnelInitiated,
-                          funnelReached,
-                          funnelOrdered,
-                          conversionRate,
-                        ),
-
-                        const SizedBox(height: 24),
-                        const Text(
-                          "🔥 Top Produits",
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
+                        Expanded(
+                          child: _buildSmallStatCard(
+                            "Commandes",
+                            orderedCount.toString(),
+                            Icons.shopping_bag,
                           ),
                         ),
-                        _buildTopProducts(productSales),
-                        const SizedBox(height: 24),
-                        const Text(
-                          "💡 Suggestions Clients",
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: _buildSmallStatCard(
+                            "Visiteurs (Uniques)",
+                            uniqueVisitors.length.toString(),
+                            Icons.visibility,
+                            subtitle: "$totalSessions sessions",
                           ),
                         ),
-                        _buildSuggestedProducts(),
-                        const SizedBox(height: 30),
                       ],
                     ),
-                  );
-                },
+                    const SizedBox(height: 12),
+                    _buildShopifyCard(
+                      "Chiffre d'Affaires",
+                      "${totalCA.toStringAsFixed(0)} DA",
+                      "Bénéfice Net: ${totalProfit.toStringAsFixed(0)} DA",
+                    ),
+                    const SizedBox(height: 12),
+                    _buildShopifyCard(
+                      "Performance",
+                      "Panier Moyen: ${panierMoyen.toStringAsFixed(0)} DA",
+                      "Fidélité (Repeat): ${repeatRate.toStringAsFixed(1)}%",
+                    ),
+                    const SizedBox(height: 12),
+
+                    // APPEL DU FUNNEL CORRIGÉ AVEC LES NOUVELLES VARIABLES
+                    _buildConversionFunnel(
+                      totalSessions,
+                      funnelInitiated,
+                      funnelReached,
+                      funnelOrdered,
+                      conversionRate,
+                    ),
+
+                    const SizedBox(height: 24),
+                    const Text(
+                      "🔥 Top Produits",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    _buildTopProducts(productSales),
+                    const SizedBox(height: 24),
+                    const Text(
+                      "💡 Suggestions Clients",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    _buildSuggestedProducts(),
+                    const SizedBox(height: 30),
+                  ],
+                ),
               );
             },
           );
@@ -435,9 +432,9 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
             ],
           ),
           const Divider(height: 24),
-          _funnelStep("Paniers initiés", init, Colors.blue.shade300),
-          _funnelStep("Reached Checkout", check, Colors.orange.shade200),
-          _funnelStep("Ventes confirmées", ord, Colors.green.shade300),
+          _funnelStep("Sessions ajout panier", init, Colors.blue.shade300),
+          _funnelStep("Sessions checkout", check, Colors.orange.shade200),
+          _funnelStep("Sessions achat", ord, Colors.green.shade300),
         ],
       ),
     );

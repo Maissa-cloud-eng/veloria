@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:veloria/core/i18n/app_text.dart';
 import 'package:veloria/presentation/controllers/cart_controllers.dart';
 import 'package:veloria/presentation/pages/admin/analytics_helper.dart';
 import 'package:veloria/presentation/pages/public/cart_page.dart';
@@ -31,7 +32,8 @@ class _ProductPageState extends State<ProductPage> {
       context,
       listen: false,
     );
-    final bool isEn = languageProvider.selectedLanguage == "Anglais";
+    final bool isEn = languageProvider.isEn;
+    final bool isAr = languageProvider.isAr;
 
     logEvent('add_to_cart');
     final user = FirebaseAuth.instance.currentUser;
@@ -39,11 +41,7 @@ class _ProductPageState extends State<ProductPage> {
     if (user == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            isEn
-                ? "Connect to add to cart"
-                : "Connectez-vous pour ajouter au panier",
-          ),
+          content: Text(context.t("product.loginNeeded")),
           backgroundColor: Colors.redAccent,
           behavior: SnackBarBehavior.floating,
         ),
@@ -53,9 +51,17 @@ class _ProductPageState extends State<ProductPage> {
 
     // --- LOGIQUE NOM & VARIANTE ---
     final String variantName = flavor != null
-        ? (isEn ? flavor.nameEn : flavor.name)
+        ? (isAr && flavor.nameAr.trim().isNotEmpty
+              ? flavor.nameAr
+              : isEn
+              ? flavor.nameEn
+              : flavor.name)
         : "";
-    final String displayTitle = isEn ? p.titleEn : p.title;
+    final String displayTitle = isAr && p.titleAr.trim().isNotEmpty
+        ? p.titleAr
+        : isEn
+        ? p.titleEn
+        : p.title;
     final String finalTitle = variantName.isNotEmpty
         ? "$displayTitle ($variantName)"
         : displayTitle;
@@ -122,6 +128,7 @@ class _ProductPageState extends State<ProductPage> {
           'productId': p.id,
           'title': p.title,
           'title_en': p.titleEn,
+          'title_ar': p.titleAr,
           'brand': p.brand,
           'price': p.price,
           'costPrice': p.costPrice,
@@ -129,6 +136,7 @@ class _ProductPageState extends State<ProductPage> {
           'imageUrl': flavor?.imageUrl ?? p.imageUrl,
           'variantName': flavor?.name,
           'variantNameEn': flavor?.nameEn,
+          'variantNameAr': flavor?.nameAr,
         });
       }
 
@@ -257,35 +265,38 @@ class _ProductPageState extends State<ProductPage> {
 
   @override
   Widget build(BuildContext context) {
-    // --- LOGIQUE BILINGUE ---
+    // --- LOGIQUE MULTILINGUE ---
     final languageProvider = Provider.of<LanguageProvider>(context);
-    final bool isEn = languageProvider.selectedLanguage == "Anglais";
+    final bool isEn = languageProvider.isEn;
+    final bool isAr = languageProvider.isAr;
 
-    final String displayTitle = isEn
+    final String displayTitle = isAr && widget.product.titleAr.trim().isNotEmpty
+        ? widget.product.titleAr
+        : isEn
         ? widget.product.titleEn
         : widget.product.title;
-    final String displayDesc = isEn
+    final String displayDesc =
+        isAr && widget.product.descriptionAr.trim().isNotEmpty
+        ? widget.product.descriptionAr
+        : isEn
         ? widget.product.descriptionEn
         : widget.product.description;
-    final String? displayTips = isEn
+    final String? displayTips =
+        isAr && (widget.product.usageTipsAr?.trim().isNotEmpty ?? false)
+        ? widget.product.usageTipsAr
+        : isEn
         ? widget.product.usageTipsEn
         : widget.product.usageTips;
 
     // Labels statiques
-    final String variantLabel = isEn ? "Variants:" : "Variantes :";
-    final String buyLabel = isEn ? "Buy" : "Acheter";
-    final String tipsLabel = isEn ? "Usage Tips" : "Conseils d'utilisation";
-    final String compoLabel = isEn ? "Composition" : "Composition";
-    final String similarLabel = isEn
-        ? "Similar Products"
-        : "Produits similaires";
-    final String noSimilarLabel = isEn
-        ? "No similar products."
-        : "Aucun produit similaire.";
-    final String addedToCartMsg = isEn ? "added to cart" : "ajouté au panier";
-    final String loginNeededMsg = isEn
-        ? "Connect to add to cart"
-        : "Connectez-vous pour ajouter au panier";
+    final String variantLabel = context.t("product.variants");
+    final String buyLabel = context.t("product.buy");
+    final String tipsLabel = context.t("product.usageTips");
+    final String compoLabel = context.t("product.composition");
+    final String similarLabel = context.t("product.similar");
+    final String noSimilarLabel = context.t("product.noSimilar");
+    final String addedToCartMsg = context.t("product.addedToCart");
+    final String loginNeededMsg = context.t("product.loginNeeded");
 
     final wishlist = context.watch<WishlistController>();
     final mainImage = selectedFlavor?.imageUrl ?? widget.product.imageUrl;
@@ -388,7 +399,14 @@ class _ProductPageState extends State<ProductPage> {
                                   ),
                                   Text(
                                     // On vérifie si une unité spécifique existe, sinon on met ml
-                                    "${widget.product.contents} ${widget.product.unit ?? 'ml'}",
+                                    AppText.formatContents(
+                                      Provider.of<LanguageProvider>(
+                                        context,
+                                        listen: false,
+                                      ).languageCode,
+                                      widget.product.contents,
+                                      widget.product.unit,
+                                    ),
                                     style: TextStyle(
                                       fontSize: 14,
                                       color: Colors.grey.shade600,
@@ -442,7 +460,10 @@ class _ProductPageState extends State<ProductPage> {
                               flavor,
                             ) {
                               final isSelected = flavor == selectedFlavor;
-                              final String displayFlavorName = isEn
+                              final String displayFlavorName =
+                                  isAr && flavor.nameAr.trim().isNotEmpty
+                                  ? flavor.nameAr
+                                  : isEn
                                   ? flavor.nameEn
                                   : flavor.name;
                               return GestureDetector(
@@ -489,7 +510,13 @@ class _ProductPageState extends State<ProductPage> {
 
                   // -------- PRIX --------
                   Text(
-                    "${widget.product.price} DA",
+                    AppText.formatPrice(
+                      Provider.of<LanguageProvider>(
+                        context,
+                        listen: false,
+                      ).languageCode,
+                      widget.product.price,
+                    ),
                     style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -529,7 +556,12 @@ class _ProductPageState extends State<ProductPage> {
 
                               // --- PRÉPARATION DES NOMS BILINGUES POUR LA SNACKBAR ---
                               final String variantName = selectedFlavor != null
-                                  ? (isEn
+                                  ? (isAr &&
+                                            selectedFlavor!.nameAr
+                                                .trim()
+                                                .isNotEmpty
+                                        ? selectedFlavor!.nameAr
+                                        : isEn
                                         ? selectedFlavor!.nameEn
                                         : selectedFlavor!.name)
                                   : "";
@@ -627,6 +659,7 @@ class _ProductPageState extends State<ProductPage> {
                                     'title_en': widget
                                         .product
                                         .titleEn, // Anglais (Ajouté)
+                                    'title_ar': widget.product.titleAr,
                                     'brand': widget.product.brand,
                                     'price': widget.product.price,
                                     'costPrice': widget.product.costPrice,
@@ -638,6 +671,7 @@ class _ProductPageState extends State<ProductPage> {
                                         selectedFlavor?.name, // Français
                                     'variantNameEn': selectedFlavor
                                         ?.nameEn, // Anglais (Ajouté)
+                                    'variantNameAr': selectedFlavor?.nameAr,
                                   });
                                 }
 
@@ -666,7 +700,7 @@ class _ProductPageState extends State<ProductPage> {
                       // --- CHANGEMENT ICI : TEXTE ---
                       label: Text(
                         widget.product.isOutOfStock
-                            ? (isEn ? "OUT OF STOCK" : "RUPTURE DE STOCK")
+                            ? context.t("product.outOfStock")
                             : buyLabel,
                         style: const TextStyle(
                           color: Colors.white,
@@ -800,7 +834,12 @@ class _ProductPageState extends State<ProductPage> {
                           itemCount: similar.length,
                           itemBuilder: (_, index) {
                             final p = similar[index];
-                            final String pTitle = isEn ? p.titleEn : p.title;
+                            final String pTitle =
+                                isAr && p.titleAr.trim().isNotEmpty
+                                ? p.titleAr
+                                : isEn
+                                ? p.titleEn
+                                : p.title;
                             return GestureDetector(
                               onTap: () => Navigator.pushReplacement(
                                 context,
@@ -834,7 +873,13 @@ class _ProductPageState extends State<ProductPage> {
                                       ),
                                     ),
                                     Text(
-                                      "${p.price} DA",
+                                      AppText.formatPrice(
+                                        Provider.of<LanguageProvider>(
+                                          context,
+                                          listen: false,
+                                        ).languageCode,
+                                        p.price,
+                                      ),
                                       style: const TextStyle(
                                         fontSize: 11,
                                         color: Colors.pink,

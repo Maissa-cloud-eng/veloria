@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:veloria/core/i18n/app_text.dart';
 import 'package:veloria/presentation/controllers/wishlist_controller.dart';
 import 'package:veloria/presentation/pages/public/product_page.dart';
 import 'package:veloria/presentation/states/language_provider.dart';
@@ -15,13 +16,14 @@ class WishlistScreen extends StatelessWidget {
 
     // Récupération de la langue
     final languageProvider = Provider.of<LanguageProvider>(context);
-    final bool isEn = languageProvider.selectedLanguage == 'Anglais';
+    final bool isEn = languageProvider.isEn;
+    final bool isAr = languageProvider.isAr;
 
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text(
-          isEn ? "My Wishlist" : "Mes favoris",
+          context.t("wishlist.title"),
           style: const TextStyle(color: Colors.white),
         ),
         backgroundColor: Colors.pink,
@@ -30,7 +32,7 @@ class WishlistScreen extends StatelessWidget {
       body: wishlist.isEmpty
           ? Center(
               child: Text(
-                isEn ? "No favorites yet 💗" : "Aucun favori pour le moment 💗",
+                context.t("wishlist.empty"),
                 style: const TextStyle(fontSize: 16, color: Colors.black54),
               ),
             )
@@ -41,7 +43,11 @@ class WishlistScreen extends StatelessWidget {
                 final Product product = wishlist[index];
 
                 // --- LOGIQUE DE TRADUCTION CONSERVÉE ---
-                final String displayTitle = isEn
+                final String displayTitle = isAr
+                    ? (product.titleAr.trim().isNotEmpty
+                          ? product.titleAr
+                          : product.title)
+                    : isEn
                     ? (product.titleEn.trim().isNotEmpty
                           ? product.titleEn
                           : product.title)
@@ -75,11 +81,7 @@ class WishlistScreen extends StatelessWidget {
                     ScaffoldMessenger.of(context).hideCurrentSnackBar();
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text(
-                          isEn
-                              ? "Removed from favorites"
-                              : "Retiré des favoris",
-                        ),
+                        content: Text(context.t("wishlist.removed")),
                         duration: const Duration(seconds: 1),
                       ),
                     );
@@ -149,7 +151,13 @@ class WishlistScreen extends StatelessWidget {
                                 const SizedBox(height: 4),
                                 Text(
                                   product.price.isNotEmpty
-                                      ? "${product.price} DA"
+                                      ? AppText.formatPrice(
+                                          Provider.of<LanguageProvider>(
+                                            context,
+                                            listen: false,
+                                          ).languageCode,
+                                          product.price,
+                                        )
                                       : "-",
                                   style: const TextStyle(
                                     fontWeight: FontWeight.bold,
@@ -175,11 +183,7 @@ class WishlistScreen extends StatelessWidget {
                               ).hideCurrentSnackBar();
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content: Text(
-                                    isEn
-                                        ? "Removed from favorites"
-                                        : "Retiré des favoris",
-                                  ),
+                                  content: Text(context.t("wishlist.removed")),
                                   duration: const Duration(seconds: 1),
                                 ),
                               );

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:veloria/core/i18n/app_text.dart';
 import 'package:veloria/presentation/pages/public/shop_page.dart';
+import 'package:veloria/presentation/states/language_provider.dart';
 import '../../../domain/entities/product.dart';
 
 class ArticlePage extends StatelessWidget {
@@ -17,9 +20,11 @@ class ArticlePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final language = Provider.of<LanguageProvider>(context);
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Article"),
+        title: Text(context.t('article.title')),
         backgroundColor: Colors.pink,
       ),
       body: StreamBuilder<DocumentSnapshot>(
@@ -32,11 +37,19 @@ class ArticlePage extends StatelessWidget {
           final data = snapshot.data!.data() as Map<String, dynamic>?;
 
           if (data == null) {
-            return const Center(child: Text("Article introuvable."));
+            return Center(child: Text(context.t('article.notFound')));
           }
 
-          final title = data['title'] ?? "";
-          final content = data['content'] ?? "";
+          final title = language.isAr
+              ? (data['title_ar'] ?? data['title'] ?? '')
+              : language.isEn
+              ? (data['title_en'] ?? data['title'] ?? '')
+              : (data['title'] ?? '');
+          final content = language.isAr
+              ? (data['content_ar'] ?? data['content'] ?? '')
+              : language.isEn
+              ? (data['content_en'] ?? data['content'] ?? '')
+              : (data['content'] ?? '');
           final recommendedProducts = List<String>.from(
             data['recommendedProducts'] ?? [],
           );
@@ -62,9 +75,9 @@ class ArticlePage extends StatelessWidget {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        "Produits recommandés",
-                        style: TextStyle(
+                      Text(
+                        context.t('article.recommendedProducts'),
+                        style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                         ),
@@ -94,7 +107,7 @@ class ArticlePage extends StatelessWidget {
                             child: ListView.separated(
                               scrollDirection: Axis.horizontal,
                               itemCount: products.length,
-                              separatorBuilder: (_, __) =>
+                              separatorBuilder: (_, index) =>
                                   const SizedBox(width: 12),
                               itemBuilder: (context, index) {
                                 final product = products[index];

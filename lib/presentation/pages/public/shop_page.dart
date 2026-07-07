@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
+import 'package:veloria/core/i18n/app_text.dart';
 import 'package:veloria/domain/entities/categories.dart';
 import 'package:veloria/presentation/controllers/cart_controllers.dart';
 import 'package:veloria/presentation/pages/admin/analytics_helper.dart';
@@ -57,6 +58,498 @@ class _ShopScreenState extends State<ShopScreen> {
     "Yeux": ["Mascara", "Eyeliner", "Palettes", "Sourcils"],
     "Lèvres": ["Rouge à lèvres", "Gloss", "Crayon à lèvres", "Encre à lèvres"],
   };
+
+  static const Map<String, String> _categoryLabelsAr = {
+    "tous": "الكل",
+    "nouveautés": "وصل جديد",
+    "nouveautes": "وصل جديد",
+    "new_arrivals": "وصل جديد",
+    "soins visage": "العناية بالوجه",
+    "soins_visage": "العناية بالوجه",
+    "visage": "العناية بالوجه",
+    "cheveux": "العناية بالشعر",
+    "soins corps": "العناية بالجسم",
+    "corps": "العناية بالجسم",
+    "maquillage": "المكياج",
+    "solaire": "واقيات الشمس",
+    "solaires": "واقيات الشمس",
+    "brume": "البخاخات",
+    "brumes": "البخاخات",
+    "parfum": "العطور",
+    "parfums": "العطور",
+    "accessoires": "الإكسسوارات",
+    "packs": "المجموعات",
+  };
+
+  static const Map<String, String> _makeupSectionLabelsAr = {
+    "Teint": "البشرة",
+    "Yeux": "العيون",
+    "Lèvres": "الشفاه",
+  };
+
+  static const Map<String, String> _subCategoryLabelsAr = {
+    "fond de teint": "كريم أساس",
+    "anti-cernes": "كونسيلر",
+    "anti-cerne": "كونسيلر",
+    "poudre": "بودرة",
+    "blush": "بلاشر",
+    "highlighter": "هايلايتر",
+    "highligher": "هايلايتر",
+    "hilighter": "هايلايتر",
+    "base": "برايمر",
+    "spray fixateur": "بخاخ تثبيت",
+    "mascara": "ماسكارا",
+    "eyeliner": "آيلاينر",
+    "palettes": "باليت",
+    "palette": "باليت",
+    "sourcils": "الحواجب",
+    "rouge à lèvres": "أحمر شفاه",
+    "rouge a levres": "أحمر شفاه",
+    "gloss": "غلوس",
+    "crayon à lèvres": "قلم شفاه",
+    "crayon a levres": "قلم شفاه",
+    "encre à lèvres": "تينت شفاه",
+    "encre a levres": "تينت شفاه",
+    "encres à lèvres": "تينت شفاه",
+    "encres a levres": "تينت شفاه",
+    "nettoyant": "منظف",
+    "sérum": "سيروم",
+    "serum": "سيروم",
+    "crème": "كريم",
+    "creme": "كريم",
+    "lotion": "لوشن",
+    "tonique": "تونر",
+    "lotion tonique": "تونر",
+    "exfoliant": "مقشر",
+    "exfoliation": "تقشير",
+    "shampooing": "شامبو",
+    "shampoing": "شامبو",
+    "masque": "ماسك",
+    "après-shampooing": "بلسم",
+    "apres-shampooing": "بلسم",
+    "sérum/huile": "سيروم/زيت",
+    "serum/huile": "سيروم/زيت",
+    "huile": "زيت",
+    "gel douche": "جل استحمام",
+    "gommage": "مقشر",
+    "lait corporel": "لوشن الجسم",
+    "déodorant": "مزيل عرق",
+    "deodorant": "مزيل عرق",
+    "protection solaire": "واقي شمس",
+    "solaire": "واقي شمس",
+    "contour/bronzer": "كونتور/برونزر",
+    "contour": "كونتور",
+    "bronzer": "برونزر",
+    "baume à lèvres": "مرطب شفاه",
+    "baume a levres": "مرطب شفاه",
+    "baume lèvres": "مرطب شفاه",
+    "baume levres": "مرطب شفاه",
+    "hygiène intime": "العناية الحميمة",
+    "hygiene intime": "العناية الحميمة",
+    "gel intime": "غسول حميم",
+    "huile sèche": "زيت جاف",
+    "huile seche": "زيت جاف",
+    "huile corps": "زيت للجسم",
+    "crème corps": "كريم للجسم",
+    "creme corps": "كريم للجسم",
+    "protection visage": "حماية الوجه",
+    "protection corps": "حماية الجسم",
+    "après-solaire": "بعد الشمس",
+    "apres-solaire": "بعد الشمس",
+    "spf visage": "واقي وجه",
+    "spf corps": "واقي جسم",
+    "protecteur de chaleur": "واقي من الحرارة",
+    "protection chaleur": "واقي من الحرارة",
+    "soins sans rinçage": "عناية بدون شطف",
+    "soins sans rincage": "عناية بدون شطف",
+    "sans rinçage": "بدون شطف",
+    "sans rincage": "بدون شطف",
+    "coloration": "صبغة شعر",
+    "couleur": "صبغة",
+    "frisé": "للشعر المجعد",
+    "frise": "للشعر المجعد",
+    "frises": "للشعر المجعد",
+    "bouclé": "للشعر الكيرلي",
+    "boucle": "للشعر الكيرلي",
+    "boucles": "للشعر الكيرلي",
+    "lisse": "للشعر الناعم",
+    "lisses": "للشعر الناعم",
+    "fruité": "فاكهي",
+    "fruite": "فاكهي",
+    "floral": "زهري",
+    "boisé": "خشبي",
+    "boise": "خشبي",
+    "sucré": "حلو",
+    "sucre": "حلو",
+    "oriental": "شرقي",
+    "musc": "مسك",
+    "vanille": "فانيلا",
+  };
+
+  String _labelKey(String value) {
+    return value
+        .toLowerCase()
+        .trim()
+        .replaceAll(RegExp(r"\s+"), " ")
+        .replaceAll("œ", "oe")
+        .replaceAll("à", "a")
+        .replaceAll("â", "a")
+        .replaceAll("ä", "a")
+        .replaceAll("á", "a")
+        .replaceAll("ç", "c")
+        .replaceAll("é", "e")
+        .replaceAll("è", "e")
+        .replaceAll("ê", "e")
+        .replaceAll("ë", "e")
+        .replaceAll("î", "i")
+        .replaceAll("ï", "i")
+        .replaceAll("ô", "o")
+        .replaceAll("ö", "o")
+        .replaceAll("ù", "u")
+        .replaceAll("û", "u")
+        .replaceAll("ü", "u");
+  }
+
+  CategoryData? _preloadedCategoryFor(String techName) {
+    final key = _labelKey(techName).replaceAll("_", " ");
+    for (final category in preloadedCategories) {
+      final nameKey = _labelKey(category.name).replaceAll("_", " ");
+      final idKey = _labelKey(category.id).replaceAll("_", " ");
+      if (nameKey == key || idKey == key) return category;
+    }
+    return null;
+  }
+
+  String _categoryLabel(String techName, LanguageProvider language) {
+    if (language.isAr) {
+      final key = _labelKey(techName);
+      if (key == "tous") return _categoryLabelsAr["tous"] ?? techName;
+      if (key == "nouveautes" || key == "new_arrivals") {
+        return _categoryLabelsAr["nouveautes"] ?? techName;
+      }
+
+      final category = _preloadedCategoryFor(techName);
+      final arabicName = category?.name_ar.trim() ?? "";
+      if (arabicName.isNotEmpty) return arabicName;
+
+      return _categoryLabelsAr[key] ??
+          _categoryLabelsAr[key.replaceAll("_", " ")] ??
+          techName;
+    }
+    if (language.isEn) {
+      final key = _labelKey(techName);
+      if (key == "tous") return "All";
+      if (key == "nouveautes" || key == "new_arrivals") return "New Arrivals";
+      final category = _preloadedCategoryFor(techName);
+      if (category != null && category.name_en.trim().isNotEmpty) {
+        return category.name_en;
+      }
+      return techName;
+    }
+    return techName;
+  }
+
+  String _subCategoryLabel(SubCategoryData subObj, LanguageProvider language) {
+    if (language.isAr) {
+      if (subObj.name_ar.trim().isNotEmpty) return subObj.name_ar;
+      final key = _labelKey(subObj.name);
+      return _subCategoryLabelsAr[key] ??
+          _subCategoryLabelsAr[key.replaceAll("_", " ")] ??
+          subObj.name;
+    }
+    if (language.isEn) return subObj.name_en;
+    return subObj.name;
+  }
+
+  Map<String, dynamic>? _arabicGuideFallback(String categoryName) {
+    final key = _labelKey(categoryName).replaceAll('_', ' ');
+
+    Map<String, dynamic> guide({
+      required String intro,
+      required List<Map<String, String>> steps,
+      List<Map<String, String>> optional = const [],
+      String facts = '',
+    }) {
+      return {
+        'intro': intro,
+        'steps': steps,
+        'optional': optional,
+        'facts': facts,
+      };
+    }
+
+    if (key.contains('soins visage') || key.contains('visage')) {
+      return guide(
+        intro:
+            'روتين الوجه لا يحتاج إلى خطوات كثيرة. الأهم هو ترتيب صحيح ومنتجات تناسب بشرتك.',
+        steps: [
+          {
+            'title': 'منظف',
+            'desc': 'يزيل الشوائب وبقايا اليوم ويحضّر البشرة لباقي الروتين.',
+          },
+          {
+            'title': 'سيروم أو علاج',
+            'desc': 'خطوة مركزة حسب الهدف: ترطيب، إشراقة، حبوب، بقع أو تهدئة.',
+          },
+          {
+            'title': 'كريم',
+            'desc': 'يرطب ويحافظ على راحة البشرة ونعومتها خلال اليوم.',
+          },
+          {
+            'title': 'واقي شمس',
+            'desc':
+                'خطوة أساسية صباحاً لحماية البشرة من التصبغات وعلامات التقدم.',
+          },
+        ],
+        optional: [
+          {'title': 'ماسك', 'desc': 'دفعة إضافية عند الحاجة'},
+          {'title': 'مقشر', 'desc': 'مرة إلى مرتين في الأسبوع بلطف'},
+        ],
+        facts:
+            'البشرة تستجيب أكثر عندما يكون الروتين بسيطاً وثابتاً، لا عندما نكثر المنتجات.',
+      );
+    }
+
+    if (key.contains('cheveux') || key.contains('شعر')) {
+      return guide(
+        intro:
+            'روتين الشعر يبدأ من الفروة وينتهي بحماية الأطراف. اختاري المنتجات حسب طبيعة الشعر وحالته.',
+        steps: [
+          {
+            'title': 'شامبو',
+            'desc': 'ينظف الفروة والشعر من الزيوت والتراكمات بدون إثقال.',
+          },
+          {
+            'title': 'ماسك أو بلسم',
+            'desc': 'يساعد على تنعيم الشعر وفك التشابك ودعم الألياف.',
+          },
+          {
+            'title': 'سيروم أو زيت',
+            'desc': 'يحمي الأطراف ويضيف لمعاناً ويقلل الهيشان.',
+          },
+        ],
+        optional: [
+          {'title': 'واقي حرارة', 'desc': 'مهم قبل السشوار أو مكواة الشعر'},
+          {'title': 'عناية بدون شطف', 'desc': 'مفيدة للشعر الجاف أو المجعد'},
+        ],
+        facts:
+            'الأطراف الجافة تحتاج حماية منتظمة، والفروة الدهنية لا تعني أن الأطراف لا تحتاج ترطيباً.',
+      );
+    }
+
+    if (key.contains('soins corps') || key.contains('corps')) {
+      return guide(
+        intro:
+            'عناية الجسم هدفها تنظيف لطيف، ترطيب مستمر وراحة للبشرة بعد الاستحمام.',
+        steps: [
+          {
+            'title': 'جل استحمام',
+            'desc': 'ينظف البشرة بلطف ويتركها منتعشة بدون شد زائد.',
+          },
+          {
+            'title': 'مقشر',
+            'desc':
+                'يساعد على تنعيم ملمس البشرة وإزالة الخلايا الميتة عند الحاجة.',
+          },
+          {
+            'title': 'لوشن أو كريم جسم',
+            'desc': 'يحافظ على الترطيب والنعومة بعد الاستحمام.',
+          },
+        ],
+        optional: [
+          {'title': 'زيت جسم', 'desc': 'لإضافة لمعة ونعومة أكثر'},
+          {'title': 'عناية المناطق الجافة', 'desc': 'للركب، الأكواع والكعبين'},
+        ],
+        facts:
+            'أفضل وقت للترطيب هو بعد الاستحمام مباشرة عندما تكون البشرة ما زالت رطبة قليلاً.',
+      );
+    }
+
+    if (key.contains('solaire') || key.contains('solaires')) {
+      return guide(
+        intro:
+            'الحماية من الشمس خطوة يومية وليست فقط للبحر أو الصيف. اختاري القوام حسب بشرتك.',
+        steps: [
+          {
+            'title': 'حماية الوجه',
+            'desc': 'واقي شمس خفيف يناسب نوع البشرة ولا يثقلها.',
+          },
+          {
+            'title': 'حماية الجسم',
+            'desc':
+                'طبقة كافية على المناطق المكشوفة، مع إعادة التطبيق عند الحاجة.',
+          },
+          {
+            'title': 'بعد الشمس',
+            'desc': 'ترطيب وتهدئة للبشرة بعد التعرض للشمس.',
+          },
+        ],
+        optional: [
+          {
+            'title': 'برونزر أو زيت تسمير',
+            'desc': 'للمظهر البرونزي مع الانتباه للحماية',
+          },
+        ],
+        facts:
+            'الواقي الشمسي يساعد على تقليل التصبغات ويحافظ على إشراقة البشرة على المدى الطويل.',
+      );
+    }
+
+    if (key.contains('brume') || key.contains('brumes')) {
+      return guide(
+        intro:
+            'البخاخات تضيف انتعاشاً سريعاً ويمكن استخدامها خلال اليوم حسب الحاجة.',
+        steps: [
+          {
+            'title': 'اختيار الرائحة',
+            'desc': 'اختاري نفحات خفيفة لليوم أو أعمق للمساء.',
+          },
+          {
+            'title': 'الرش',
+            'desc': 'رشي على الجسم أو الملابس من مسافة مناسبة.',
+          },
+          {
+            'title': 'التجديد',
+            'desc': 'يمكن إعادة الرش خلال اليوم للحفاظ على الانتعاش.',
+          },
+        ],
+        facts: 'البخاخات أخف من العطر وغالباً تناسب الاستخدام اليومي المتكرر.',
+      );
+    }
+
+    if (key.contains('parfum') || key.contains('parfums')) {
+      return guide(
+        intro:
+            'العطر يكتمل عندما تختارين عائلة روائح تناسب ذوقك ووقت الاستخدام.',
+        steps: [
+          {
+            'title': 'اختيار العائلة',
+            'desc': 'زهري، فاكهي، حلو، خشبي أو شرقي حسب المزاج والمناسبة.',
+          },
+          {
+            'title': 'نقاط النبض',
+            'desc': 'طبقيه على المعصمين، الرقبة أو خلف الأذن بدون فرك قوي.',
+          },
+          {
+            'title': 'الثبات',
+            'desc': 'ترطيب البشرة قبل العطر يساعد الرائحة على الثبات أكثر.',
+          },
+        ],
+        facts:
+            'الرائحة تتغير قليلاً من بشرة لأخرى، لذلك التجربة مهمة قبل الاختيار.',
+      );
+    }
+
+    if (key.contains('maquillage')) {
+      return guide(
+        intro:
+            'مكياج بسيط ومرتب يبدأ بتوحيد البشرة ثم إبراز العينين والشفاه حسب رغبتك.',
+        steps: [
+          {
+            'title': 'البشرة',
+            'desc':
+                'وحّدي اللون بخفة بكريم أساس، BB كريم أو كونسيلر على المناطق التي تحتاج تغطية. الهدف: بشرة نضرة وغير متكلفة.',
+          },
+          {
+            'title': 'البودرة',
+            'desc':
+                'تثبت كريم الأساس وتخفف اللمعان. طبقيها بفرشاة أو إسفنجة حسب الحاجة.',
+          },
+          {
+            'title': 'العينان',
+            'desc':
+                'ماسكارا لفتح النظرة، ويمكن إضافة خط آيلاينر رفيع لتحديد العين.',
+          },
+          {
+            'title': 'البلاشر',
+            'desc':
+                'يعطي الوجه حيوية وانتعاشاً. ربتيه على الخدين لتأثير طبيعي.',
+          },
+          {
+            'title': 'الشفاه',
+            'desc':
+                'بلسم، غلوس أو أحمر شفاه حسب الرغبة. الترطيب يبقى دائماً أساسياً.',
+          },
+        ],
+        optional: [
+          {'title': 'باليتات', 'desc': 'للعب بالألوان'},
+          {
+            'title': 'أقلام العين أو الشفاه',
+            'desc': 'لتكثيف أو إعادة تحديد الخط',
+          },
+          {'title': 'أحمر شفاه', 'desc': 'مطفي، ساتان أو لامع'},
+          {'title': 'برايمر', 'desc': 'يحسن الثبات وينعم ملمس البشرة'},
+          {'title': 'بخاخ تثبيت', 'desc': 'يطيل ثبات المكياج خلال اليوم'},
+          {'title': 'كونتور', 'desc': 'ينحت ملامح الوجه ويحددها'},
+        ],
+        facts:
+            'فيتامين E يساعد على حماية البشرة والحفاظ على راحتها حتى مع المكياج.',
+      );
+    }
+
+    return null;
+  }
+
+  String _guideIntro(
+    CategoryData categoryData,
+    CategoryGuide guide,
+    bool isEn,
+    bool isAr,
+  ) {
+    if (isAr) {
+      final fallback = _arabicGuideFallback(categoryData.name);
+      return guide.intro_ar.trim().isNotEmpty
+          ? guide.intro_ar
+          : (fallback?['intro'] as String? ?? guide.intro);
+    }
+    return isEn ? guide.intro_en : guide.intro;
+  }
+
+  String _guideFacts(
+    CategoryData categoryData,
+    CategoryGuide guide,
+    bool isEn,
+    bool isAr,
+  ) {
+    if (isAr) {
+      final fallback = _arabicGuideFallback(categoryData.name);
+      return guide.facts_ar.trim().isNotEmpty
+          ? guide.facts_ar
+          : (fallback?['facts'] as String? ?? guide.facts);
+    }
+    return isEn ? guide.facts_en : guide.facts;
+  }
+
+  List<Map<String, String>> _guideSteps(
+    CategoryData categoryData,
+    List<GuideStep> source,
+    bool isEn,
+    bool isAr, {
+    bool optional = false,
+  }) {
+    if (isAr) {
+      final fallback = _arabicGuideFallback(categoryData.name);
+      final fallbackList = fallback?[optional ? 'optional' : 'steps'];
+      if (fallbackList is List) {
+        return fallbackList
+            .map((item) => Map<String, String>.from(item as Map))
+            .toList();
+      }
+    }
+
+    return source.map((step) {
+      if (isAr) {
+        return {
+          'title': step.title_ar.trim().isNotEmpty ? step.title_ar : step.title,
+          'desc': step.desc_ar.trim().isNotEmpty ? step.desc_ar : step.desc,
+        };
+      }
+      return {
+        'title': isEn ? step.title_en : step.title,
+        'desc': isEn ? step.desc_en : step.desc,
+      };
+    }).toList();
+  }
 
   TextEditingController searchController = TextEditingController();
   bool isSearching = false;
@@ -172,11 +665,9 @@ class _ShopScreenState extends State<ShopScreen> {
 
   void _showBasicsGuide(BuildContext context, String categoryTechName) {
     // 1. On récupère la langue actuelle
-    final String lang = Provider.of<LanguageProvider>(
-      context,
-      listen: false,
-    ).selectedLanguage;
-    final bool isEn = lang == "Anglais";
+    final language = Provider.of<LanguageProvider>(context, listen: false);
+    final bool isEn = language.isEn;
+    final bool isAr = language.isAr;
 
     // 2. On trouve l'objet CategoryData complet (celui qui contient le guide)
     // On utilise techName car c'est la clé (ex: "Soins visage")
@@ -222,7 +713,13 @@ class _ShopScreenState extends State<ShopScreen> {
 
               // TITRE TRADUIT
               Text(
-                isEn ? categoryData.name_en : categoryData.name,
+                isAr
+                    ? (categoryData.name_ar.trim().isNotEmpty
+                          ? categoryData.name_ar
+                          : _categoryLabel(categoryData.name, language))
+                    : isEn
+                    ? categoryData.name_en
+                    : categoryData.name,
                 style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -231,10 +728,10 @@ class _ShopScreenState extends State<ShopScreen> {
               ),
 
               // INTRO TRADUITE
-              if ((isEn ? guide.intro_en : guide.intro).isNotEmpty) ...[
+              if (_guideIntro(categoryData, guide, isEn, isAr).isNotEmpty) ...[
                 const SizedBox(height: 8),
                 Text(
-                  isEn ? guide.intro_en : guide.intro,
+                  _guideIntro(categoryData, guide, isEn, isAr),
                   style: const TextStyle(
                     fontSize: 14,
                     fontStyle: FontStyle.italic,
@@ -246,9 +743,9 @@ class _ShopScreenState extends State<ShopScreen> {
               const Divider(height: 32),
 
               // --- ÉTAPES (STEPS) DYNAMIQUES ---
-              ...guide.steps.map((step) {
-                final String sTitle = isEn ? step.title_en : step.title;
-                final String sDesc = isEn ? step.desc_en : step.desc;
+              ..._guideSteps(categoryData, guide.steps, isEn, isAr).map((step) {
+                final String sTitle = step['title'] ?? '';
+                final String sDesc = step['desc'] ?? '';
 
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 16),
@@ -287,19 +784,31 @@ class _ShopScreenState extends State<ShopScreen> {
               }),
 
               // --- OPTIONNEL DYNAMIQUE ---
-              if (guide.optional.isNotEmpty) ...[
+              if (_guideSteps(
+                categoryData,
+                guide.optional,
+                isEn,
+                isAr,
+                optional: true,
+              ).isNotEmpty) ...[
                 const SizedBox(height: 8),
                 Text(
-                  isEn ? "➕ Optional:" : "➕ Optionnel :",
+                  context.t("shop.optional"),
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     color: Colors.pink[300],
                   ),
                 ),
                 const SizedBox(height: 8),
-                ...guide.optional.map((opt) {
-                  final String oTitle = isEn ? opt.title_en : opt.title;
-                  final String oDesc = isEn ? opt.desc_en : opt.desc;
+                ..._guideSteps(
+                  categoryData,
+                  guide.optional,
+                  isEn,
+                  isAr,
+                  optional: true,
+                ).map((opt) {
+                  final String oTitle = opt['title'] ?? '';
+                  final String oDesc = opt['desc'] ?? '';
 
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 6),
@@ -324,7 +833,7 @@ class _ShopScreenState extends State<ShopScreen> {
               ],
 
               // --- MINI-FACTS DYNAMIQUES ---
-              if ((isEn ? guide.facts_en : guide.facts).isNotEmpty) ...[
+              if (_guideFacts(categoryData, guide, isEn, isAr).isNotEmpty) ...[
                 const SizedBox(height: 24),
                 Container(
                   width: double.infinity,
@@ -334,9 +843,7 @@ class _ShopScreenState extends State<ShopScreen> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    isEn
-                        ? "💡 Mini-facts: ${guide.facts_en}"
-                        : "💡 Mini-facts : ${guide.facts}",
+                    "${context.t("shop.miniFacts")} ${_guideFacts(categoryData, guide, isEn, isAr)}",
                     style: const TextStyle(
                       fontSize: 12,
                       fontStyle: FontStyle.italic,
@@ -367,15 +874,13 @@ class _ShopScreenState extends State<ShopScreen> {
     double hauteurFixeTexte =
         190; // Garde tes 190 ou baisse à 160-170 si tu trouves la carte trop longue
     double hauteurTotaleCarte = largeurColonne + hauteurFixeTexte;
-    final String lang = Provider.of<LanguageProvider>(context).selectedLanguage;
-    final bool isEn = lang == "Anglais";
     return Scaffold(
       appBar: AppBar(
         iconTheme: const IconThemeData(color: Colors.white),
         title: isSearching
             ? _buildSearchField()
             : Text(
-                isEn ? "Shop" : "Boutique",
+                context.t("shop.title"),
                 style: const TextStyle(color: _kActiveText),
               ),
         backgroundColor: _kPrimaryPink,
@@ -409,8 +914,6 @@ class _ShopScreenState extends State<ShopScreen> {
   }
 
   Widget _buildSearchField() {
-    final String lang = Provider.of<LanguageProvider>(context).selectedLanguage;
-    final bool isEn = lang == "Anglais";
     return Container(
       height: 40,
       padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -422,7 +925,7 @@ class _ShopScreenState extends State<ShopScreen> {
         controller: searchController,
         autofocus: true,
         decoration: InputDecoration(
-          hintText: isEn ? "Search..." : "Rechercher...",
+          hintText: context.t("shop.search"),
           border: InputBorder.none,
           isDense: true,
         ),
@@ -434,8 +937,7 @@ class _ShopScreenState extends State<ShopScreen> {
   Widget _buildMakeupSectionBar() {
     if (selectedCategory != "Maquillage") return const SizedBox.shrink();
 
-    final String lang = Provider.of<LanguageProvider>(context).selectedLanguage;
-    final bool isEn = lang == "Anglais";
+    final language = Provider.of<LanguageProvider>(context);
 
     // Liste des sections intermédiaires
     final List<String> sections = ["Teint", "Yeux", "Lèvres"];
@@ -446,15 +948,17 @@ class _ShopScreenState extends State<ShopScreen> {
         height: 34,
         child: ListView.builder(
           scrollDirection: Axis.horizontal,
+          reverse: language.isAr,
           padding: const EdgeInsets.symmetric(horizontal: 16),
           itemCount: sections.length,
           itemBuilder: (context, index) {
             final section = sections[index];
             final isSel = selectedMakeupSection == section;
 
-            // Traductions simples
             String displayLabel = section;
-            if (isEn) {
+            if (language.isAr) {
+              displayLabel = _makeupSectionLabelsAr[section] ?? section;
+            } else if (language.isEn) {
               if (section == "Teint") displayLabel = "Face";
               if (section == "Yeux") displayLabel = "Eyes";
               if (section == "Lèvres") displayLabel = "Lips";
@@ -502,8 +1006,9 @@ class _ShopScreenState extends State<ShopScreen> {
   }
 
   Widget _buildEducationalHeader() {
-    final String lang = Provider.of<LanguageProvider>(context).selectedLanguage;
-    final bool isEn = lang == "Anglais";
+    final language = Provider.of<LanguageProvider>(context);
+    final bool isEn = language.isEn;
+    final bool isAr = language.isAr;
 
     // 1. On cherche la catégorie sélectionnée pour voir si elle a un guide
     CategoryData? currentCat;
@@ -527,34 +1032,44 @@ class _ShopScreenState extends State<ShopScreen> {
     // On traduit la question selon la catégorie et la langue
     switch (selectedCategory) {
       case "Soins visage":
-        question = isEn
+        question = isAr
+            ? "لا تعرفين خطوات روتين العناية بالوجه؟"
+            : isEn
             ? "Don't know the steps of a face routine?"
             : "Tu ne connais pas les étapes d’une routine visage ?";
         break;
       case "Maquillage":
-        question = isEn
+        question = isAr
+            ? "لا تعرفين كيف تجهزين مكياجاً سهلاً؟"
+            : isEn
             ? "Don't know how to create an easy makeup look?"
             : "Tu ne sais pas comment composer un maquillage facile ?";
         break;
       case "Soins corps":
-        question = isEn
+        question = isAr
+            ? "لا تعرفين من أين تبدئين العناية بالجسم؟"
+            : isEn
             ? "Don't know where to start for your body care?"
             : "Tu ne sais pas par quoi commencer pour ton corps ?";
         break;
       case "Cheveux":
-        question = isEn
+        question = isAr
+            ? "لا تعرفين خطوات روتين الشعر؟"
+            : isEn
             ? "Don't know the steps for your hair routine?"
             : "Tu ne connais pas les étapes pour tes cheveux ?";
         break;
       default:
         // Phrase générique pour les nouvelles catégories ajoutées sur Firestore
-        question = isEn
+        question = isAr
+            ? "تريدين معرفة أساسيات هذه الفئة؟"
+            : isEn
             ? "Want to learn the basics for this category?"
             : "Tu veux apprendre les bases pour cette catégorie ?";
     }
 
     // Traduction du bouton
-    linkText = isEn ? "Discover the basics" : "Découvrir les bases";
+    linkText = context.t("shop.discoverBasics");
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -589,9 +1104,6 @@ class _ShopScreenState extends State<ShopScreen> {
     double hauteurTotaleCarte,
   ) {
     // --- ON RÉCUPÈRE LA LANGUE ICI ---
-    final String lang = Provider.of<LanguageProvider>(context).selectedLanguage;
-    final bool isEn = lang == "Anglais";
-
     return CustomScrollView(
       controller: _scrollController,
       slivers: [
@@ -608,7 +1120,7 @@ class _ShopScreenState extends State<ShopScreen> {
             child: Center(
               // Ajoute un Center pour que ce soit joli
               child: Text(
-                isEn ? "No products available." : "Aucun produit disponible.",
+                context.t("shop.noProducts"),
                 style: const TextStyle(
                   fontSize: 16,
                   color: Colors.grey,
@@ -639,7 +1151,7 @@ class _ShopScreenState extends State<ShopScreen> {
   }
 
   Widget _buildCategoryBar(List<Product> allProducts) {
-    final String lang = Provider.of<LanguageProvider>(context).selectedLanguage;
+    final language = Provider.of<LanguageProvider>(context);
 
     List<String> categories = List<String>.from(preloadedCategoryNames);
     categories.remove("Packs");
@@ -655,32 +1167,14 @@ class _ShopScreenState extends State<ShopScreen> {
       height: 48,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
+        reverse: language.isAr,
         padding: const EdgeInsets.symmetric(horizontal: 16),
         itemCount: categories.length,
         itemBuilder: (context, index) {
           final String techName = categories[index];
           final isSel = techName == selectedCategory;
 
-          String displayLabel = techName;
-
-          if (lang == "Anglais") {
-            if (techName == "Tous") {
-              displayLabel = "All";
-            } else if (techName == "Nouveautés") {
-              // 🌟 INTERCEPTION ICI : On traduit le bouton virtuel manuellement
-              displayLabel = "New Arrivals";
-            } else {
-              // Pour les vraies catégories de Firestore, on cherche l'objet traduit
-              try {
-                final catObj = preloadedCategories.firstWhere(
-                  (c) => c.name == techName,
-                );
-                displayLabel = catObj.name_en;
-              } catch (e) {
-                displayLabel = techName;
-              }
-            }
-          }
+          String displayLabel = _categoryLabel(techName, language);
 
           return GestureDetector(
             onTap: () => setState(() {
@@ -691,17 +1185,27 @@ class _ShopScreenState extends State<ShopScreen> {
             }),
             child: Container(
               margin: const EdgeInsets.only(right: 10, top: 6),
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+              constraints: BoxConstraints(
+                minWidth: techName == "Nouveautés" ? 116 : 0,
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
               decoration: BoxDecoration(
                 color: isSel ? _kPrimaryPink : _kLightPinkBackground,
                 borderRadius: BorderRadius.circular(18),
               ),
               child: Center(
-                child: Text(
-                  displayLabel, // Affiche "New Arrivals" proprement !
-                  style: TextStyle(
-                    color: isSel ? _kActiveText : _kPrimaryPink,
-                    fontWeight: FontWeight.w600,
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    displayLabel,
+                    maxLines: 1,
+                    softWrap: false,
+                    overflow: TextOverflow.visible,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: isSel ? _kActiveText : _kPrimaryPink,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ),
@@ -854,9 +1358,7 @@ class _ShopScreenState extends State<ShopScreen> {
   }
 
   Widget _buildOriginFilter() {
-    final String lang = Provider.of<LanguageProvider>(context).selectedLanguage;
-    final bool isEn = lang == "Anglais";
-
+    final language = Provider.of<LanguageProvider>(context);
     bool hasProfile =
         (userSkinType != null && userSkinType!.isNotEmpty) ||
         (userHairTexture != null && userHairTexture!.isNotEmpty);
@@ -868,6 +1370,9 @@ class _ShopScreenState extends State<ShopScreen> {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(
+            textDirection: language.isAr
+                ? TextDirection.rtl
+                : TextDirection.ltr,
             children: [
               // --- 1. TES BOUTONS ORIGINE (REMIS COMME AVANT) ---
               ToggleButtons(
@@ -891,15 +1396,15 @@ class _ShopScreenState extends State<ShopScreen> {
                 children: [
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 5),
-                    child: Text(isEn ? "All" : "Tous"),
-                  ),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 4),
-                    child: Text("🇩🇿Local"),
+                    child: Text(context.t("shop.all")),
                   ),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 4),
-                    child: Text(isEn ? "🌍Imported" : "🌍Import"),
+                    child: Text(context.t("shop.local")),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: Text(context.t("shop.imported")),
                   ),
                 ],
               ),
@@ -923,9 +1428,7 @@ class _ShopScreenState extends State<ShopScreen> {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(
-                          isEn
-                              ? "Complete your beauty profile in the account tab to unlock personalization! ✨"
-                              : "Complète ton profil beauté dans l'onglet compte pour débloquer la personnalisation ! ✨",
+                          context.t("shop.completeProfile"),
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                         backgroundColor: _kPrimaryPink,
@@ -979,7 +1482,7 @@ class _ShopScreenState extends State<ShopScreen> {
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        isEn ? "FOR YOU" : "POUR TOI",
+                        context.t("shop.forYou"),
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.bold,
@@ -1003,9 +1506,8 @@ class _ShopScreenState extends State<ShopScreen> {
   }
 
   Widget _buildSortButton() {
-    // On récupère la langue actuelle depuis le Provider
-    final String lang = Provider.of<LanguageProvider>(context).selectedLanguage;
-    final bool isEn = lang == "Anglais";
+    final language = Provider.of<LanguageProvider>(context);
+    String sortText(String key) => AppText.t(language.languageCode, key);
 
     return PopupMenuButton<String>(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
@@ -1020,19 +1522,10 @@ class _ShopScreenState extends State<ShopScreen> {
         child: const Icon(Icons.filter_list, color: Colors.black87, size: 15),
       ),
       onSelected: (value) => setState(() => selectedSort = value),
-      itemBuilder: (context) => [
-        PopupMenuItem(
-          value: "none",
-          child: Text(isEn ? "Default" : "Par défaut"),
-        ),
-        PopupMenuItem(
-          value: "asc",
-          child: Text(isEn ? "Price: Low to High" : "Prix croissant"),
-        ),
-        PopupMenuItem(
-          value: "desc",
-          child: Text(isEn ? "Price: High to Low" : "Prix décroissant"),
-        ),
+      itemBuilder: (_) => [
+        PopupMenuItem(value: "none", child: Text(sortText("shop.defaultSort"))),
+        PopupMenuItem(value: "asc", child: Text(sortText("shop.priceAsc"))),
+        PopupMenuItem(value: "desc", child: Text(sortText("shop.priceDesc"))),
       ],
     );
   }
@@ -1054,7 +1547,7 @@ class _ShopScreenState extends State<ShopScreen> {
     }
 
     // 3. On récupère la langue actuelle
-    final String lang = Provider.of<LanguageProvider>(context).selectedLanguage;
+    final language = Provider.of<LanguageProvider>(context);
 
     return AnimatedSize(
       duration: const Duration(milliseconds: 300),
@@ -1062,15 +1555,14 @@ class _ShopScreenState extends State<ShopScreen> {
         height: 38,
         child: ListView.builder(
           scrollDirection: Axis.horizontal,
+          reverse: language.isAr,
           padding: const EdgeInsets.symmetric(horizontal: 16),
           itemCount: subs.length,
           itemBuilder: (context, index) {
             final subObj = subs[index];
 
             // 4. LOGIQUE D'AFFICHAGE UNIQUEMENT : On traduit pour les yeux de l'utilisateur
-            final String displayName = (lang == "Anglais")
-                ? subObj.name_en
-                : subObj.name;
+            final String displayName = _subCategoryLabel(subObj, language);
 
             // 5. COMPARAISON SÉCURISÉE : On compare TOUJOURS avec la valeur technique en FR (subObj.name)
             final isSel = subObj.name == selectedSubCategory;
@@ -1111,6 +1603,43 @@ class _ShopScreenState extends State<ShopScreen> {
 class ProductCard extends StatelessWidget {
   final Product product;
   // 🌟 Le dictionnaire magique pour l'affichage en Anglais
+  static const Map<String, String> tagTranslationsAr = {
+    "secs": "جاف",
+    "sèche": "جافة",
+    "normaux": "عادي",
+    "normale": "عادية",
+    "gras": "دهني",
+    "grasse": "دهنية",
+    "mixte": "مختلطة",
+    "abîmés": "متضرر",
+    "colorés": "مصبوغ",
+    "fins": "خفيف",
+    "tout_type": "كل الأنواع",
+    "tous types": "كل الأنواع",
+    "tous types ": "كل الأنواع",
+    "tous types de peaux": "كل أنواع البشرة",
+    "très sèche": "جافة جداً",
+    "tres seche": "جافة جداً",
+    "sensible": "حساسة",
+    "sensibles": "حساسة",
+    "abîmé": "متضرر",
+    "abime": "متضرر",
+    "abimes": "متضرر",
+    "sec": "جاف",
+    "sèches": "جافة",
+    "seches": "جافة",
+    "coloré": "مصبوغ",
+    "colore": "مصبوغ",
+    "blond": "أشقر",
+    "blonds": "أشقر",
+    "bouclés": "كيرلي",
+    "boucles": "كيرلي",
+    "frisés": "مجعد",
+    "frises": "مجعد",
+    "crépus": "مجعد جداً",
+    "crepus": "مجعد جداً",
+  };
+
   static const Map<String, String> tagTranslationsEn = {
     "secs": "Dry",
     "sèche": "Dry",
@@ -1126,6 +1655,31 @@ class ProductCard extends StatelessWidget {
     "tous types": "All Types",
     "tous types ": "All Types",
   };
+  String _localizedBadge(String rawBadge, bool isAr) {
+    if (!isAr) return rawBadge;
+
+    final normalized = rawBadge.toLowerCase().trim();
+    final shadeMatch = RegExp(
+      r'(?:teintes?|shades?)\s*(\d+)',
+    ).firstMatch(normalized);
+    if (shadeMatch != null) {
+      return 'درجات ${shadeMatch.group(1)}';
+    }
+
+    const badgeTranslationsAr = {
+      'nouveau': 'جديد',
+      'new': 'جديد',
+      'promo': 'تخفيض',
+      'soldes': 'تخفيض',
+      'best seller': 'الأكثر مبيعاً',
+      'bestseller': 'الأكثر مبيعاً',
+      'édition limitée': 'إصدار محدود',
+      'edition limitee': 'إصدار محدود',
+    };
+
+    return badgeTranslationsAr[normalized] ?? rawBadge;
+  }
+
   List<String> getDisplayTagsList(dynamic rawTags) {
     // 1. Conversion du format Cloudinary (List ou String) vers List<String>
     List<String> allTags = [];
@@ -1227,19 +1781,26 @@ class ProductCard extends StatelessWidget {
   Widget build(BuildContext context) {
     // ON UTILISE LE PROVIDER AU LIEU DU LOCALE SYSTÈME
     final languageProvider = Provider.of<LanguageProvider>(context);
-    final bool isEn = languageProvider.selectedLanguage == "Anglais";
+    final bool isEn = languageProvider.isEn;
+    final bool isAr = languageProvider.isAr;
 
     // Sélection dynamique des textes
-    final String displayTitle = isEn ? product.titleEn : product.title;
-    final String displayBadge = isEn
-        ? (product.customBadgeEn ?? '')
+    final String displayTitle = isAr && product.titleAr.trim().isNotEmpty
+        ? product.titleAr
+        : isEn
+        ? product.titleEn
+        : product.title;
+    final String rawBadge = isEn
+        ? (product.customBadgeEn ?? product.customBadge ?? '')
         : (product.customBadge ?? '');
+    final String arBadge = product.customBadgeAr?.trim() ?? '';
+    final String displayBadge = isAr
+        ? _localizedBadge(arBadge.isNotEmpty ? arBadge : rawBadge, true)
+        : rawBadge;
 
-    final String buyLabel = isEn ? "Buy" : "Acheter";
-    final String addedToCartMsg = isEn ? "added to cart" : "ajouté au panier";
-    final String loginNeededMsg = isEn
-        ? "Please login to add to cart"
-        : "Connectez-vous pour ajouter au panier";
+    final String buyLabel = context.t("shop.buy");
+    final String addedToCartMsg = context.t("product.addedToCart");
+    final String loginNeededMsg = context.t("shop.loginNeeded");
 
     final bool isOutOfStock = product.isOutOfStock;
 
@@ -1360,10 +1921,11 @@ class ProductCard extends StatelessWidget {
                         if (displayTags.isEmpty) return const SizedBox.shrink();
 
                         // 2. On récupère la langue actuelle de l'application Veloria
-                        final String lang = Provider.of<LanguageProvider>(
+                        final languageProvider = Provider.of<LanguageProvider>(
                           context,
-                        ).selectedLanguage;
-                        final bool isEn = (lang == "Anglais");
+                        );
+                        final bool isEn = languageProvider.isEn;
+                        final bool isAr = languageProvider.isAr;
 
                         return ListView.separated(
                           scrollDirection: Axis.horizontal,
@@ -1377,7 +1939,13 @@ class ProductCard extends StatelessWidget {
 
                             // 3. Traduction pour l'affichage uniquement
                             String labelAffiche = tagFr;
-                            if (isEn) {
+                            if (isAr) {
+                              labelAffiche =
+                                  ProductCard.tagTranslationsAr[tagFr
+                                      .toLowerCase()
+                                      .trim()] ??
+                                  tagFr;
+                            } else if (isEn) {
                               // On utilise le dictionnaire statique qu'on a défini à l'étape précédente
                               labelAffiche =
                                   ProductCard.tagTranslationsEn[tagFr
@@ -1386,8 +1954,9 @@ class ProductCard extends StatelessWidget {
                                   tagFr;
                             } else {
                               // En français, on gère proprement l'affichage de "tout_type"
-                              if (tagFr == "tout_type")
+                              if (tagFr == "tout_type") {
                                 labelAffiche = "Tous Types";
+                              }
                             }
 
                             return Container(
@@ -1418,7 +1987,10 @@ class ProductCard extends StatelessWidget {
                   const SizedBox(height: 10),
                   // --- PRIX ---
                   Text(
-                    "${product.price} DA",
+                    AppText.formatPrice(
+                      languageProvider.languageCode,
+                      product.price,
+                    ),
                     style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
@@ -1534,6 +2106,7 @@ class ProductCard extends StatelessWidget {
 
                             // 🟢 SÉCURITÉ : On force l'ajout du titre EN si l'ancien panier ne l'avait pas
                             items[index]['title_en'] = product.titleEn;
+                            items[index]['title_ar'] = product.titleAr;
                             items[index]['title'] = product.title;
                           } else {
                             // Nouveau produit : on enregistre le titre FR ET le titre EN
@@ -1542,6 +2115,7 @@ class ProductCard extends StatelessWidget {
                               'productId': product.id,
                               'title': product.title,
                               'title_en': product.titleEn, // Parfait !
+                              'title_ar': product.titleAr,
                               'brand': product.brand,
                               'price': product.price,
                               'costPrice': product.costPrice,
@@ -1580,7 +2154,7 @@ class ProductCard extends StatelessWidget {
                 label: Text(
                   // TEXTE DYNAMIQUE : Rupture ou Acheter
                   product.isOutOfStock
-                      ? (isEn ? "OUT OF STOCK" : "RUPTURE")
+                      ? context.t("shop.outOfStockShort")
                       : buyLabel,
                   style: const TextStyle(
                     color: Colors.white,

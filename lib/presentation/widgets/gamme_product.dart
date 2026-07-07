@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:veloria/core/i18n/app_text.dart';
 import 'package:veloria/domain/entities/product.dart';
 import 'package:veloria/presentation/pages/public/product_page.dart';
+import 'package:veloria/presentation/states/language_provider.dart';
 
 class RangeSection extends StatelessWidget {
   final List<Product> products;
@@ -16,6 +19,8 @@ class RangeSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final languageProvider = Provider.of<LanguageProvider>(context);
+    final bool isAr = languageProvider.isAr;
     final displayProducts = products.take(2).toList();
     if (displayProducts.isEmpty) return const SizedBox.shrink();
 
@@ -28,7 +33,7 @@ class RangeSection extends StatelessWidget {
           child: Divider(thickness: 0.5, color: Color(0xFFEEEEEE)),
         ),
         Text(
-          isEn ? "Same Range" : "De la même gamme",
+          context.t("product.sameRange"),
           style: const TextStyle(
             fontSize: 18, // Légèrement plus petit pour faire moins "gros titre"
             fontWeight: FontWeight.w700,
@@ -39,9 +44,7 @@ class RangeSection extends StatelessWidget {
           height: 2,
         ), // Très peu d'espace entre titre et sous-titre
         Text(
-          isEn
-              ? "Complete your routine for best results."
-              : "Complétez votre routine pour plus d'efficacité.",
+          context.t("product.completeRoutine"),
           style: TextStyle(fontSize: 13, color: Colors.grey.shade500),
         ),
         const SizedBox(height: 16),
@@ -109,7 +112,11 @@ class RangeSection extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      isEn ? p.titleEn : p.title,
+                      isAr && p.titleAr.trim().isNotEmpty
+                          ? p.titleAr
+                          : isEn
+                          ? p.titleEn
+                          : p.title,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
@@ -121,7 +128,13 @@ class RangeSection extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      "${p.price} DA",
+                      AppText.formatPrice(
+                        Provider.of<LanguageProvider>(
+                          context,
+                          listen: false,
+                        ).languageCode,
+                        p.price,
+                      ),
                       style: const TextStyle(
                         fontSize: 13,
                         color: Colors.pink,
